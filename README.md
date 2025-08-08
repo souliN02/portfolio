@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🖥️ Portfolio – Windows XP Edition
 
-## Getting Started
+A playful, interactive personal portfolio built with **Next.js** and styled to look and feel like **Windows XP**.  
+Instead of boring navigation menus, you explore my projects, CV, and contact info by double-clicking desktop icons — just like the old days.
 
-First, run the development server:
+![Windows XP Portfolio Screenshot](public/screenshot-placeholder.png)
 
+---
+
+## 🚀 Getting Started
+
+### 1️⃣ Clone the repo
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/souliN02/portfolio.git
+cd portfolio
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2️⃣ Install dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 3️⃣ Run the development server
+```bash
+npm run dev
+```
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## ✨ Features
 
-To learn more about Next.js, take a look at the following resources:
+- 🎯 **Windows XP–themed UI**
+  - Classic desktop wallpaper
+  - Start menu & taskbar
+  - Double-clickable desktop icons
+- 🗂 **Multiple Windows**
+  - CV opens in a Microsoft Word–style viewer
+  - Projects & About Me in separate draggable windows
+- 🖱 **Drag & Resize**
+  - Move desktop icons (with optional grid snapping)
+  - Resize and maximize/restore app windows
+- 💾 **Persistent Layout**
+  - Icon positions saved in `localStorage`
+- 🔊 **XP Boot Sound**
+  - Plays once on first interaction
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📂 Sections
 
-## Deploy on Vercel
+- **📄 CV** – View my résumé as an embedded PDF
+- **📦 Projects** – See some of my best work
+- **💬 About Me** – Learn more about who I am
+- **📧 Contact** – Reach out to me
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠️ Tech Stack
+
+- **Frontend**: [Next.js 15](https://nextjs.org/), [React](https://react.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide](https://lucide.dev/)
+- **State Persistence**: Browser `localStorage`
+
+---
+
+## 📸 Screenshots
+
+| Desktop View | App Window |
+|--------------|------------|
+| ![Desktop Screenshot](public/screenshot-desktop-placeholder.png) | ![Window Screenshot](public/screenshot-window-placeholder.png) |
+
+---
+
+## 📄 License
+
+This project is open-source and available under the [MIT License](LICENSE).
+
+---
+
+> 💡 **Fun Fact:** The grid snapping is optional! Hold **Alt** while dragging an icon to place it anywhere.
