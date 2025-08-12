@@ -3,17 +3,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Folder, FileText, Terminal, Contact } from "lucide-react";
 
-const ICON_SIZE = { w: 80, h: 90 }; // approximate footprint (including label)
-const GRID = 20; // snap-to-grid size (hold Alt to disable while dragging)
+const ICON_SIZE = { w: 80, h: 90 };
+const GRID = 20;
 
 const icons = [
-  { id: "cv", name: "Bekir's CV", icon: <FileText className="w-8 h-8" />, window: () => <CVWindow /> },
-  { id: "projects", name: "Projekter", icon: <Folder className="w-8 h-8" />, window: () => <ProjectsWindow /> },
-  { id: "about", name: "Om mig", icon: <Terminal className="w-8 h-8" />, window: () => <AboutWindow /> },
-  { id: "contact", name: "Kontakt", icon: <Contact className="w-8 h-8" />, window: () => <ContactWindow /> },
+  { id: "cv", name: "Bekir's CV", icon: <FileText className="w-8 h-8 text-black" />, window: () => <CVWindow /> },
+  { id: "projects", name: "Projekter", icon: <Folder className="w-8 h-8 text-black" />, window: () => <ProjectsWindow /> },
+  { id: "about", name: "Om mig", icon: <Terminal className="w-8 h-8 text-black" />, window: () => <AboutWindow /> },
+  { id: "contact", name: "Kontakt", icon: <Contact className="w-8 h-8 text-black" />, window: () => <ContactWindow /> },
 ];
 
-// Stable default positions for SSR + first client render (no window/localStorage here)
 function getDefaultIconPositions() {
   const startX = 24, startY = 24, spacingY = 110;
   const defaults = {};
@@ -32,14 +31,13 @@ export default function XpPortfolio() {
   const [showGrid, setShowGrid] = useState(true);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const prevBounds = useRef(null); // { pos: {x,y}, size: {w,h} }
+  const prevBounds = useRef(null);
 
   const containerRef = useRef(null);
   const windowRef = useRef(null);
   const audioRef = useRef(null);
   const [bootPlayed, setBootPlayed] = useState(false);
 
-  // After mount, hydrate icon positions from localStorage to avoid SSR mismatch
   useEffect(() => {
     try {
       const saved = localStorage.getItem("xp_icon_positions");
@@ -47,16 +45,13 @@ export default function XpPortfolio() {
     } catch {}
   }, []);
 
-  // --- Audio prep ---
   useEffect(() => {
     audioRef.current = new Audio("/xp-boot.mp3");
     audioRef.current.preload = "auto";
   }, []);
 
-  // Unlock & play audio on first interaction (browsers block autoplay)
   useEffect(() => {
     if (bootPlayed) return;
-
     const tryPlay = async () => {
       if (bootPlayed) return;
       try {
@@ -67,17 +62,15 @@ export default function XpPortfolio() {
         }
         await audioRef.current?.play();
         setBootPlayed(true);
-        setTimeout(() => setShowAudioPrompt(false), 300); // fade banner
+        setTimeout(() => setShowAudioPrompt(false), 300);
         window.removeEventListener("pointerdown", tryPlay);
         window.removeEventListener("keydown", tryPlay);
         document.removeEventListener("visibilitychange", tryPlay);
       } catch (_) {}
     };
-
     window.addEventListener("pointerdown", tryPlay);
     window.addEventListener("keydown", tryPlay);
     document.addEventListener("visibilitychange", tryPlay);
-
     return () => {
       window.removeEventListener("pointerdown", tryPlay);
       window.removeEventListener("keydown", tryPlay);
@@ -92,10 +85,9 @@ export default function XpPortfolio() {
     } catch {}
   };
 
-  // --- Desktop icon dragging ---
   const dragStateRef = useRef({ id: null, startX: 0, startY: 0, orig: { x: 0, y: 0 } });
   const onIconMouseDown = (e, id) => {
-    if (e.button !== 0) return; // left click only
+    if (e.button !== 0) return;
     e.preventDefault();
     const pos = iconPositions[id] || { x: 24, y: 24 };
     dragStateRef.current = { id, startX: e.clientX, startY: e.clientY, orig: { ...pos } };
@@ -107,7 +99,6 @@ export default function XpPortfolio() {
     if (!id) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    // Live snap-to-grid (hold Alt to disable snapping)
     const rawX = orig.x + dx;
     const rawY = orig.y + dy;
     const nx = e.altKey ? rawX : Math.round(rawX / GRID) * GRID;
@@ -116,16 +107,14 @@ export default function XpPortfolio() {
     setIconPositions(next);
   };
   const onIconMouseUp = () => {
-    // Persist (already snapped during drag)
     const { id } = dragStateRef.current;
     if (id) saveIconPositions({ ...iconPositions });
     dragStateRef.current = { id: null, startX: 0, startY: 0, orig: { x: 0, y: 0 } };
     document.removeEventListener("mousemove", onIconMouseMove);
   };
 
-  // --- Window dragging ---
   const onWindowMouseDown = (e) => {
-    if (isMaximized) return; // can't drag when maximized
+    if (isMaximized) return;
     const startX = e.clientX;
     const startY = e.clientY;
     const startPos = { ...windowPos };
@@ -142,9 +131,8 @@ export default function XpPortfolio() {
     document.addEventListener("mouseup", onUp);
   };
 
-  // --- Window resizing (bottom-right handle) ---
   const onResizeMouseDown = (e) => {
-    if (isMaximized) return; // can't resize when maximized
+    if (isMaximized) return;
     e.stopPropagation();
     const startX = e.clientX;
     const startY = e.clientY;
@@ -169,7 +157,6 @@ export default function XpPortfolio() {
     setIsMinimized(false);
   };
 
-  // --- Window controls ---
   const onClose = () => {
     setOpenWindow(null);
     setIsMinimized(false);
@@ -182,10 +169,8 @@ export default function XpPortfolio() {
   const onToggleMaximize = () => {
     if (!openWindow) return;
     if (!isMaximized) {
-      // Save previous bounds
       prevBounds.current = { pos: { ...windowPos }, size: { ...windowSize } };
-      // Maximize to container bounds (leave taskbar height)
-      const taskbarH = 40; // ~h-10
+      const taskbarH = 40;
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect) {
         setWindowPos({ x: 0, y: 0 });
@@ -193,7 +178,6 @@ export default function XpPortfolio() {
       }
       setIsMaximized(true);
     } else {
-      // Restore
       const b = prevBounds.current;
       if (b) {
         setWindowPos(b.pos);
@@ -203,7 +187,6 @@ export default function XpPortfolio() {
     }
   };
 
-  // Restore from taskbar if minimized
   const onTaskbarAppClick = () => {
     setIsMinimized(false);
   };
@@ -216,7 +199,6 @@ export default function XpPortfolio() {
         </div>
       )}
 
-      {/* Optional grid overlay */}
       {showGrid && (
         <div
           className="pointer-events-none absolute inset-0"
@@ -227,7 +209,6 @@ export default function XpPortfolio() {
         />
       )}
 
-      {/* Desktop icons (draggable) */}
       <div className="absolute inset-0">
         {icons.map((icon) => {
           const pos = iconPositions[icon.id] || { x: 24, y: 24 };
@@ -248,7 +229,6 @@ export default function XpPortfolio() {
         })}
       </div>
 
-      {/* Taskbar */}
       <div className="absolute bottom-0 left-0 w-full h-10 bg-blue-800 flex items-center px-2 sm:px-4 text-white font-bold gap-2">
         <div className="bg-blue-500 px-3 py-1 rounded cursor-default">Start</div>
         {openWindow && (
@@ -268,7 +248,6 @@ export default function XpPortfolio() {
         </div>
       </div>
 
-      {/* App window */}
       {openWindow && !isMinimized && (
         <div
           ref={windowRef}
@@ -288,14 +267,12 @@ export default function XpPortfolio() {
           </div>
           <div className="p-4 overflow-auto flex-grow">{openWindow.window()}</div>
 
-          {/* Resize handle (bottom-right) */}
           {!isMaximized && (
             <div
               onMouseDown={onResizeMouseDown}
               className="absolute right-0 bottom-0 w-4 h-4 cursor-se-resize bg-transparent"
               title="Resize"
             >
-              {/* little triangle visual */}
               <svg width="16" height="16" className="absolute right-0 bottom-0 opacity-40">
                 <path d="M0 16 L16 16 L16 0 Z" fill="#64748b" />
               </svg>
@@ -303,6 +280,44 @@ export default function XpPortfolio() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function Bevel({ children, className = "" }) {
+  return (
+    <div
+      className={[
+        "border",
+        "border-b-gray-500 border-r-gray-500",
+        "border-t-white border-l-white",
+        "bg-gradient-to-b from-gray-50 to-gray-200",
+        "shadow-inner",
+        "rounded-sm",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({ icon: Icon, color = "blue", children }) {
+  const colorMap = {
+    blue: "from-blue-600 to-blue-500 border-blue-300",
+    green: "from-green-600 to-green-500 border-green-300",
+    purple: "from-purple-600 to-purple-500 border-purple-300",
+  };
+  const colors = colorMap[color] || colorMap.blue;
+  return (
+    <div className={`mb-3`}>
+      <div className={`text-white text-sm font-semibold px-3 py-1 rounded-t-sm bg-gradient-to-r ${colors}`}>
+        <div className="flex items-center gap-2">
+          {Icon && <Icon className="w-4 h-4 text-white" />}
+          <span>{children}</span>
+        </div>
+      </div>
+      <div className="h-[1px] w-full bg-white/60" />
     </div>
   );
 }
@@ -320,33 +335,92 @@ function CVWindow() {
 
 function ProjectsWindow() {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-2">Mine Projekter</h2>
-      <ul className="list-disc pl-6">
-        <li>Multiplayer FPS i Unity</li>
-        <li>Webscraper med Playwright</li>
-        <li>Betalingssystem med Nexi Nets</li>
-      </ul>
+    <div className="h-full w-full p-1">
+      <Bevel className="p-4">
+        <SectionTitle icon={Folder} color="blue">Mine Projekter</SectionTitle>
+        <ul className="space-y-2 text-gray-800">
+          <li className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/70 transition">
+            <Folder className="w-4 h-4 text-blue-700" />
+            <span>Multiplayer FPS i Unity</span>
+          </li>
+          <li className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/70 transition">
+            <Folder className="w-4 h-4 text-blue-700" />
+            <span>Webscraper med Playwright</span>
+          </li>
+          <li className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/70 transition">
+            <Folder className="w-4 h-4 text-blue-700" />
+            <span>Betalingssystem med Nexi Nets</span>
+          </li>
+        </ul>
+      </Bevel>
     </div>
   );
 }
 
 function AboutWindow() {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-2">Om Bekir</h2>
-      <p>Jeg er nyuddannet datamatiker med passion for backend, sikkerhed og automatisering. Jeg elsker at løse komplekse problemer og lære nye teknologier.</p>
+    <div className="h-full w-full p-1">
+      <Bevel className="p-4">
+        <SectionTitle icon={Terminal} color="green">Om Bekir</SectionTitle>
+        <div className="text-gray-800 leading-relaxed space-y-3">
+          <p>
+            Jeg er nyuddannet datamatiker med passion for{" "}
+            <span className="font-semibold text-green-700">backend</span>,{" "}
+            <span className="font-semibold text-green-700">sikkerhed</span> og{" "}
+            <span className="font-semibold text-green-700">automatisering</span>.
+          </p>
+          <p>
+            Jeg elsker at løse komplekse problemer, lære nye teknologier og bygge løsninger, der er både
+            effektive og brugervenlige—med fokus på kvalitet og stabilitet.
+          </p>
+        </div>
+      </Bevel>
     </div>
   );
 }
 
 function ContactWindow() {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-2">Kontakt</h2>
-      <p>Email: bekir@example.com</p>
-      <p>LinkedIn: linkedin.com/in/bekir</p>
-      <p>GitHub: github.com/bekir</p>
+    <div className="h-full w-full p-1">
+      <Bevel className="p-4">
+        <SectionTitle icon={Contact} color="purple">Kontakt</SectionTitle>
+        <div className="space-y-2 text-gray-800">
+          <p>
+            <span className="font-semibold">📱 Telefon:</span>{" "}
+            <a href="tel:+4522560477" className="underline decoration-dotted hover:no-underline">
+              +45 22560477
+            </a>
+          </p>
+          <p>
+            <span className="font-semibold">📧 Email:</span>{" "}
+            <a href="mailto:bekirsaliv1@gmail.com" className="text-blue-700 underline decoration-dotted hover:no-underline">
+              bekirsaliv1@gmail.com
+            </a>
+          </p>
+          <p>
+            <span className="font-semibold">🔗 LinkedIn:</span>{" "}
+            <a
+              href="https://www.linkedin.com/in/bekirsaliv02/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-700 underline decoration-dotted hover:no-underline"
+            >
+              linkedin.com/in/bekirsaliv02
+            </a>
+          </p>
+          <p>
+            <span className="font-semibold">💻 GitHub:</span>{" "}
+            <a
+              href="https://github.com/souliN02"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-700 underline decoration-dotted hover:no-underline"
+            >
+              github.com/souliN02
+            </a>
+          </p>
+        </div>
+      </Bevel>
     </div>
   );
 }
