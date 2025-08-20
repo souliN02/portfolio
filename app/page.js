@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Folder, FileText, Terminal, Contact } from "lucide-react";
+import { Folder, FileText, Terminal, Contact, ChevronDown, Link as LinkIcon } from "lucide-react";
 
 const ICON_SIZE = { w: 80, h: 90 };
 const GRID = 20;
@@ -25,7 +25,7 @@ function getDefaultIconPositions() {
 export default function XpPortfolio() {
   const [openWindow, setOpenWindow] = useState(null);
   const [windowPos, setWindowPos] = useState({ x: 120, y: 120 });
-  const [windowSize, setWindowSize] = useState({ w: 600, h: 400 });
+  const [windowSize, setWindowSize] = useState({ w: 640, h: 460 });
   const [showAudioPrompt, setShowAudioPrompt] = useState(true);
   const [iconPositions, setIconPositions] = useState(getDefaultIconPositions());
   const [showGrid, setShowGrid] = useState(true);
@@ -137,7 +137,7 @@ export default function XpPortfolio() {
     const startX = e.clientX;
     const startY = e.clientY;
     const startSize = { ...windowSize };
-    const MIN_W = 360, MIN_H = 240;
+    const MIN_W = 360, MIN_H = 260;
     const onMove = (me) => {
       const dw = me.clientX - startX;
       const dh = me.clientY - startY;
@@ -192,9 +192,13 @@ export default function XpPortfolio() {
   };
 
   return (
-    <div ref={containerRef} suppressHydrationWarning className="relative w-screen h-screen bg-[url('/xp-wallpaper.jpg')] bg-cover overflow-hidden font-sans select-none">
+    <div
+      ref={containerRef}
+      suppressHydrationWarning
+      className="relative w-screen h-screen bg-[url('/xp-wallpaper.jpg')] bg-cover overflow-hidden font-sans select-none"
+    >
       {showAudioPrompt && (
-        <div className={`absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-200 border border-yellow-400 text-yellow-900 px-4 py-2 rounded shadow-md z-50 animate-pulse transition-opacity duration-500 ${bootPlayed ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-200/95 border border-yellow-400 text-yellow-900 px-4 py-2 rounded shadow-md z-50 animate-pulse transition-opacity duration-500 ${bootPlayed ? 'opacity-0' : 'opacity-100'}`}>
           Klik hvor som helst for at aktivere lyd
         </div>
       )}
@@ -203,12 +207,13 @@ export default function XpPortfolio() {
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage: `repeating-linear-gradient(0deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 1px, transparent 1px, transparent ${GRID}px), repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 1px, transparent 1px, transparent ${GRID}px)`,
-            opacity: 0.35,
+            backgroundImage: `repeating-linear-gradient(0deg, rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 1px, transparent 1px, transparent ${GRID}px), repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 1px, transparent 1px, transparent ${GRID}px)`,
+            opacity: 0.33,
           }}
         />
       )}
 
+      {/* Desktop Icons */}
       <div className="absolute inset-0">
         {icons.map((icon) => {
           const pos = iconPositions[icon.id] || { x: 24, y: 24 };
@@ -218,10 +223,10 @@ export default function XpPortfolio() {
               style={{ left: `${pos.x}px`, top: `${pos.y}px`, width: `${ICON_SIZE.w}px`, transition: 'left 60ms linear, top 60ms linear' }}
               onMouseDown={(e) => onIconMouseDown(e, icon.id)}
               onDoubleClick={() => handleDoubleClick(icon.id)}
-              className="absolute flex flex-col items-center cursor-pointer text-white hover:opacity-80"
+              className="absolute flex flex-col items-center cursor-pointer text-white hover:opacity-90"
             >
-              <div className="bg-white p-2 rounded shadow-md">{icon.icon}</div>
-              <span className="text-sm text-center mt-1 bg-blue-700 bg-opacity-60 px-1 rounded select-none">
+              <div className="bg-white p-2 rounded shadow-md ring-1 ring-black/10">{icon.icon}</div>
+              <span className="text-sm text-center mt-1 bg-blue-700/70 px-1 rounded select-none">
                 {icon.name}
               </span>
             </div>
@@ -229,12 +234,15 @@ export default function XpPortfolio() {
         })}
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full h-10 bg-blue-800 flex items-center px-2 sm:px-4 text-white font-bold gap-2">
-        <div className="bg-blue-500 px-3 py-1 rounded cursor-default">Start</div>
+      {/* Taskbar */}
+      <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-r from-blue-900 to-blue-700 flex items-center px-2 sm:px-4 text-white font-bold gap-2 shadow-[0_-2px_8px_rgba(0,0,0,0.35)]">
+        <div className="bg-blue-500/90 px-3 py-1 rounded border border-blue-300/30 shadow hover:bg-blue-400/90 transition">
+          Start
+        </div>
         {openWindow && (
           <button
             onClick={onTaskbarAppClick}
-            className={`px-2 py-1 rounded border border-blue-400 bg-blue-600 hover:bg-blue-500 ${isMinimized ? '' : 'ring-2 ring-white/40'}`}
+            className={`px-2 py-1 rounded border border-blue-300/30 bg-blue-600/80 hover:bg-blue-500/80 shadow ${isMinimized ? '' : 'ring-2 ring-white/40'}`}
             title={openWindow.name}
           >
             {openWindow.name}
@@ -248,21 +256,22 @@ export default function XpPortfolio() {
         </div>
       </div>
 
+      {/* Window */}
       {openWindow && !isMinimized && (
         <div
           ref={windowRef}
           style={{ top: `${windowPos.y}px`, left: `${windowPos.x}px`, width: `${windowSize.w}px`, height: `${windowSize.h}px` }}
-          className={`absolute z-20 bg-gray-100 border-2 border-gray-700 shadow-xl flex flex-col ${isMaximized ? 'rounded-none' : ''}`}
+          className={`absolute z-20 bg-white/90 backdrop-blur border-2 border-gray-700 shadow-2xl flex flex-col ${isMaximized ? 'rounded-none' : 'rounded-md'}`}
         >
           <div
             onMouseDown={onWindowMouseDown}
-            className="bg-blue-800 text-white px-2 sm:px-3 py-1 font-bold flex items-center justify-between cursor-move select-none"
+            className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-2 sm:px-3 py-1 font-bold flex items-center justify-between cursor-move select-none rounded-t-md"
           >
             <span className="truncate pr-2">{openWindow.name}</span>
             <div className="flex items-center gap-1">
-              <button onClick={onMinimize} className="w-6 h-6 grid place-items-center hover:bg-blue-700 rounded" title="Minimer">_</button>
-              <button onClick={onToggleMaximize} className="w-6 h-6 grid place-items-center hover:bg-blue-700 rounded" title={isMaximized ? 'Gendan' : 'Maksimér'}>{isMaximized ? '❐' : '▢'}</button>
-              <button onClick={onClose} className="w-6 h-6 grid place-items-center hover:bg-red-600 rounded" title="Luk">✕</button>
+              <button onClick={onMinimize} className="w-6 h-6 grid place-items-center hover:bg-blue-700/80 rounded" title="Minimer">_</button>
+              <button onClick={onToggleMaximize} className="w-6 h-6 grid place-items-center hover:bg-blue-700/80 rounded" title={isMaximized ? 'Gendan' : 'Maksimér'}>{isMaximized ? '❐' : '▢'}</button>
+              <button onClick={onClose} className="w-6 h-6 grid place-items-center hover:bg-red-600/90 rounded" title="Luk">✕</button>
             </div>
           </div>
           <div className="p-4 overflow-auto flex-grow">{openWindow.window()}</div>
@@ -280,6 +289,15 @@ export default function XpPortfolio() {
           )}
         </div>
       )}
+
+      {/* Global styles for animations so you don't touch globals.css */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
+      `}</style>
     </div>
   );
 }
@@ -291,9 +309,10 @@ function Bevel({ children, className = "" }) {
         "border",
         "border-b-gray-500 border-r-gray-500",
         "border-t-white border-l-white",
-        "bg-gradient-to-b from-gray-50 to-gray-200",
+        "bg-gradient-to-b from-gray-50/90 to-gray-200/80",
         "shadow-inner",
-        "rounded-sm",
+        "rounded-md",
+        "ring-1 ring-black/5",
         className,
       ].join(" ")}
     >
@@ -304,14 +323,14 @@ function Bevel({ children, className = "" }) {
 
 function SectionTitle({ icon: Icon, color = "blue", children }) {
   const colorMap = {
-    blue: "from-blue-600 to-blue-500 border-blue-300",
-    green: "from-green-600 to-green-500 border-green-300",
-    purple: "from-purple-600 to-purple-500 border-purple-300",
+    blue: "from-blue-700 to-blue-500 border-blue-300",
+    green: "from-green-700 to-green-500 border-green-300",
+    purple: "from-purple-700 to-purple-500 border-purple-300",
   };
   const colors = colorMap[color] || colorMap.blue;
   return (
     <div className={`mb-3`}>
-      <div className={`text-white text-sm font-semibold px-3 py-1 rounded-t-sm bg-gradient-to-r ${colors}`}>
+      <div className={`text-white text-sm font-semibold px-3 py-1 rounded-t-md bg-gradient-to-r ${colors} shadow`}>
         <div className="flex items-center gap-2">
           {Icon && <Icon className="w-4 h-4 text-white" />}
           <span>{children}</span>
@@ -333,24 +352,172 @@ function CVWindow() {
   );
 }
 
+/** ---------- Fancier Projects (animated accordion + badges + thumbs) ---------- */
 function ProjectsWindow() {
+  const [openId, setOpenId] = useState(null);
+  const panelRefs = useRef({}); // measure height for smooth max-height animation
+
+  const projects = [
+    {
+      id: "crm-nextjs",
+      title: "CRM-system i Next.js",
+      period: "2025",
+      accent: "from-blue-500 to-indigo-500",
+      status: "In-Progress",
+      thumb: "/globe.svg", // replace with screenshot later
+      summary: "Et internt CRM bygget med Next.js og Prisma med roller, import-requests og webhook-mails.",
+      details: [
+        "Admin-/brugerroller, godkendelsesflow for import-forespørgsler, CSV-import til Leads/Customers.",
+        "Webhook-modul der sender kvitteringer og interne notifikationer.",
+        "Designet med enkle, produktive skærme (Admin, Imports, Leads/Customers).",
+      ],
+      tech: ["Next.js (App Router)", "Prisma", "NextAuth", "PostgreSQL/SQLite", "Tailwind"],
+      links: [
+        { label: "GitHub", href: "https://github.com/souliN02" },
+      ],
+    },
+    {
+      id: "unity-fps",
+      title: "Multiplayer FPS i Unity",
+      period: "2024–2025",
+      accent: "from-emerald-500 to-teal-500",
+      status: "Done",
+      thumb: "/window.svg",
+      summary: "Et FPS-projekt med netværkssynkronisering og gameplay-løkke.",
+      details: [
+        "Netcode, lobby, basic matchmaking og synkroniseret bevægelse/skyde-mekanik.",
+        "Kort-rotation og simpel score/round-structure.",
+      ],
+      tech: ["Unity", "C#", "Netcode"],
+      links: [],
+    },
+    {
+      id: "playwright-scraper",
+      title: "Webscraper med Playwright",
+      period: "2025",
+      accent: "from-orange-500 to-amber-500",
+      status: "In-Progress",
+      thumb: "/file.svg",
+      summary: "Asynkron scraping af CVR-data med batch-kontrol og robust fejlhåndtering.",
+      details: [
+        "Kører i containere for parallel indsamling.",
+        "Genoptager batches og logger fejl til genkørsel.",
+      ],
+      tech: ["Node.js/Python", "Playwright", "Docker"],
+      links: [],
+    },
+    {
+      id: "nexi-nets-payments",
+      title: "Betalingssystem med Nexi Nets",
+      period: "2025",
+      accent: "from-fuchsia-500 to-pink-500",
+      status: "Done",
+      thumb: "/vercel.svg",
+      summary: "Checkout + webhook-flows der sender kundekvittering og intern mail.",
+      details: [
+        "Validerer events, skriver audit-logs og genererer PDF/HTML-mails.",
+        "Håndterer reservation vs. capture med tydelig kommunikation til kunden.",
+      ],
+      tech: ["Next.js", "Nodemailer", "Nexi Nets API"],
+      links: [],
+    },
+  ];
+
+  function toggle(id) {
+    setOpenId((prev) => (prev === id ? null : id));
+  }
+
   return (
     <div className="h-full w-full p-1">
       <Bevel className="p-4">
         <SectionTitle icon={Folder} color="blue">Mine Projekter</SectionTitle>
-        <ul className="space-y-2 text-gray-800">
-          <li className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/70 transition">
-            <Folder className="w-4 h-4 text-blue-700" />
-            <span>Multiplayer FPS i Unity</span>
-          </li>
-          <li className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/70 transition">
-            <Folder className="w-4 h-4 text-blue-700" />
-            <span>Webscraper med Playwright</span>
-          </li>
-          <li className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/70 transition">
-            <Folder className="w-4 h-4 text-blue-700" />
-            <span>Betalingssystem med Nexi Nets</span>
-          </li>
+
+        <ul className="space-y-4 text-gray-800">
+          {projects.map((p, idx) => {
+            const isOpen = openId === p.id;
+            const panelId = `panel-${p.id}`;
+            return (
+              <li
+                key={p.id}
+                style={{ animationDelay: `${idx * 100}ms` }}
+                className="animate-fadeIn rounded-xl bg-white/70 backdrop-blur ring-1 ring-black/5 shadow hover:shadow-lg transition-shadow"
+              >
+                {/* Header */}
+                <button
+                  onClick={() => toggle(p.id)}
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  className="w-full flex items-center justify-between gap-3 px-3 py-3 text-left"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`h-10 w-10 rounded-md bg-gradient-to-br ${p.accent} shadow-inner grid place-items-center`}>
+                      <img src={p.thumb} alt="" className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium truncate">{p.title}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-900/80 text-white/90">{p.period}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.status === "Done" ? "bg-green-600 text-white" : "bg-yellow-500 text-black"}`}>
+                          {p.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 line-clamp-1">{p.summary}</p>
+                    </div>
+                  </div>
+                  <ChevronDown
+                    className={`w-5 h-5 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"}`}
+                  />
+                </button>
+
+                {/* Animated Panel */}
+                <div
+                  id={panelId}
+                  ref={(el) => (panelRefs.current[p.id] = el)}
+                  style={{
+                    maxHeight: isOpen ? `${panelRefs.current[p.id]?.scrollHeight ?? 0}px` : "0px",
+                    opacity: isOpen ? 1 : 0,
+                    transform: isOpen ? "translateY(0)" : "translateY(-4px)",
+                  }}
+                  className="overflow-hidden transition-all duration-300 ease-out"
+                >
+                  <div className="px-4 pt-0 pb-3 space-y-3">
+                    <div className="p-3 rounded-lg border border-gray-200/80 bg-white/90 shadow-sm">
+                      <p className="text-sm">{p.summary}</p>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div className="rounded-lg border border-gray-200/80 bg-white/80 p-3">
+                        <p className="text-xs font-semibold mb-1">Højdepunkter</p>
+                        <ul className="list-disc pl-5 space-y-1 text-sm">
+                          {p.details.map((d, i) => <li key={i}>{d}</li>)}
+                        </ul>
+                      </div>
+
+                      <div className="rounded-lg border border-gray-200/80 bg-white/80 p-3">
+                        <p className="text-xs font-semibold mb-2">Teknologi</p>
+                        <div className="flex flex-wrap gap-2">
+                          {p.tech.map((t, i) => (
+                            <span key={i} className="text-[11px] px-2 py-1 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 ring-1 ring-black/10 shadow-sm">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                        {p.links?.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-3 pt-3">
+                            {p.links.map((l, i) => (
+                              <a key={i} href={l.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-700 underline decoration-dotted hover:no-underline">
+                                <LinkIcon className="w-4 h-4" /> {l.label}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </Bevel>
     </div>
@@ -399,23 +566,13 @@ function ContactWindow() {
           </p>
           <p>
             <span className="font-semibold">🔗 LinkedIn:</span>{" "}
-            <a
-              href="https://www.linkedin.com/in/bekirsaliv02/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-700 underline decoration-dotted hover:no-underline"
-            >
+            <a href="https://www.linkedin.com/in/bekirsaliv02/" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline decoration-dotted hover:no-underline">
               linkedin.com/in/bekirsaliv02
             </a>
           </p>
           <p>
             <span className="font-semibold">💻 GitHub:</span>{" "}
-            <a
-              href="https://github.com/souliN02"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-700 underline decoration-dotted hover:no-underline"
-            >
+            <a href="https://github.com/souliN02" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline decoration-dotted hover:no-underline">
               github.com/souliN02
             </a>
           </p>
