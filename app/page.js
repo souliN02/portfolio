@@ -43,7 +43,7 @@ export default function XpPortfolio() {
   const [windowSize, setWindowSize] = useState({ w: 640, h: 460 });
   const [showAudioPrompt, setShowAudioPrompt] = useState(true);
   const [iconPositions, setIconPositions] = useState(getDefaultIconPositions());
-  const [showGrid, setShowGrid] = useState(false);
+  const [showGrid, setShowGrid] = useState(true);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const prevBounds = useRef(null);
@@ -591,9 +591,9 @@ function AboutWindow() {
         <div className="text-gray-800 leading-relaxed space-y-6">
           {/* Intro */}
           <div className="rounded-md border border-green-200/70 bg-white/80 p-3 shadow-sm">
-            <p className="text-lg font-semibold text-green-700">Hi, I'm Bekir</p>
+            <p className="text-lg font-semibold text-green-700">Hi, I’m Bekir</p>
             <p className="mt-2">
-              I'm a recent <span className="font-semibold">Computer Science AP (Datamatiker)</span> graduate from Zealand Academy,
+              I’m a recent <span className="font-semibold">Computer Science AP (Datamatiker)</span> graduate from Zealand Academy,
               where I focused on <span className="text-green-700 font-medium">backend development</span>,{" "}
               <span className="text-green-700 font-medium">databases</span>, and{" "}
               <span className="text-green-700 font-medium">software architecture</span>. I enjoy building stable, scalable solutions with a good developer and user experience.
