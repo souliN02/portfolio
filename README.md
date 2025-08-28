@@ -3,7 +3,7 @@
 A playful, interactive personal portfolio built with **Next.js** and styled to look and feel like **Windows XP**.  
 Instead of boring navigation menus, you explore my projects, CV, and contact info by double-clicking desktop icons — just like the old days.
 
-![Windows XP Portfolio Screenshot](public/screenshot-placeholder.png)
+![Windows XP Portfolio Screenshot](public/screenshot.png)
 
 ---
 
@@ -69,7 +69,7 @@ Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
 | Desktop View | App Window |
 |--------------|------------|
-| ![Desktop Screenshot](public/screenshot-desktop-placeholder.png) | ![Window Screenshot](public/screenshot-window-placeholder.png) |
+| ![Desktop Screenshot](public/screenshot-desktop.png) | ![Window Screenshot](public/screenshot-window.png) |
 
 ---
 
