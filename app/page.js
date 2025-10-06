@@ -458,6 +458,23 @@ function ProjectsWindow() {
       tech: ["Unity", "C#", "Netcode"],
       links: [],
     },
+    {
+      id: "jornada-ingles",
+      title: "Jornada Inglês Br",
+      period: "2025",
+      accent: "from-rose-500 to-pink-500",
+      status: "Personal",
+      internship: false,
+      thumb: "/globe.svg",
+      summary: "Website for Jornada Inglês Br showcasing company identity, mission, and service offerings.",
+      details: [
+        "Designed and built a professional landing page showcasing the company's identity, mission, and vision.",
+        "Implemented responsive layouts for optimal viewing across desktop and mobile devices.",
+        "Created clear service offering sections with engaging visual design and user-friendly navigation.",
+      ],
+      tech: ["Next.js", "React", "Tailwind CSS"],
+      links: [{ label: "Live Site", href: "https://jornadaingles.vercel.app/" }],
+    },
   ];
 
   function toggle(id) {
