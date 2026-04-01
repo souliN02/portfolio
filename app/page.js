@@ -154,7 +154,7 @@ const desktopIcons = [
 ];
 
 function getDefaultIconPositions() {
-  const startX = 20, startY = 20, spacingY = 110;
+  const startX = 20, startY = 16, spacingY = 100;
   const defaults = {};
   desktopIcons.forEach((ic, i) => {
     defaults[ic.id] = { x: startX, y: startY + i * spacingY };
@@ -218,11 +218,19 @@ export default function XpPortfolio() {
     soundsRef.current = createSoundManager();
   }, []);
 
-  // Load saved icon positions
+  // Load saved icon positions (versioned key so layout resets when icons change)
+  const STORAGE_KEY = "xp_icon_positions_v2";
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("xp_icon_positions");
-      if (saved) setIconPositions(JSON.parse(saved));
+      // Clear old key
+      localStorage.removeItem("xp_icon_positions");
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Only use saved positions if all current icons are present
+        const allPresent = desktopIcons.every((ic) => parsed[ic.id]);
+        if (allPresent) setIconPositions(parsed);
+      }
     } catch {}
   }, []);
 
@@ -244,7 +252,7 @@ export default function XpPortfolio() {
   const saveIconPositions = (positions) => {
     setIconPositions(positions);
     try {
-      localStorage.setItem("xp_icon_positions", JSON.stringify(positions));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(positions));
     } catch {}
   };
 
@@ -427,7 +435,7 @@ export default function XpPortfolio() {
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={icon.icon} alt={icon.name} width={40} height={40} draggable={false} />
+                <img src={icon.icon} alt={icon.name} width={40} height={40} style={{ width: 40, height: 40 }} draggable={false} />
               </div>
               <span
                 className={`text-[11px] text-center mt-0.5 px-1 leading-tight xp-icon-label ${
