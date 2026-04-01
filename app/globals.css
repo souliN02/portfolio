@@ -15,5 +15,98 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Tahoma", Arial, Helvetica, sans-serif;
+}
+
+/* XP Boot screen — 3 sliding blue blocks, just like the real thing */
+.xp-loader-blocks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+.xp-loader-blocks::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  height: 100%;
+  width: 30%;
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      #3B82F6 8%, #3B82F6 20%, transparent 22%,
+      transparent 30%,
+      #3B82F6 32%, #3B82F6 48%, transparent 50%,
+      transparent 58%,
+      #3B82F6 60%, #3B82F6 76%, transparent 78%
+    );
+  animation: xpSlide 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes xpSlide {
+  0%   { left: -40%; }
+  100% { left: 110%; }
+}
+
+/* XP fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
+
+/* XP desktop icon text shadow for readability */
+.xp-icon-label {
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5);
+}
+
+/* XP Window title bar gradient */
+.xp-titlebar {
+  background: linear-gradient(180deg, #0A246A 0%, #0F3699 8%, #3A6EA5 40%, #3163A5 88%, #003399 93%, #003399 100%);
+}
+
+.xp-titlebar-inactive {
+  background: linear-gradient(180deg, #7B96AC 0%, #8EAEC1 8%, #99B4C6 40%, #8EAEC1 88%, #7B96AC 93%, #7B96AC 100%);
+}
+
+/* XP Start button gradient */
+.xp-start-btn {
+  background: linear-gradient(180deg, #388e3c 0%, #2e7d32 40%, #1b5e20 100%);
+  border-radius: 0 8px 8px 0;
+  border: 1px solid #0d3f0f;
+  padding: 2px 10px 2px 6px;
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+.xp-start-btn:hover {
+  filter: brightness(1.15);
+}
+.xp-start-btn:active {
+  filter: brightness(0.9);
+}
+
+/* XP Taskbar gradient */
+.xp-taskbar {
+  background: linear-gradient(180deg, #1f3f7a 0%, #2b5daa 3%, #3174c2 6%, #3c89d0 10%, #245dab 12%, #245dab 88%, #1e4e9a 92%, #183d82 96%, #122d66 100%);
+}
+
+/* XP System tray area */
+.xp-systray {
+  background: linear-gradient(180deg, #0f6ab4 0%, #1a7fd4 50%, #0f6ab4 100%);
+  border-left: 1px solid #0a4a7a;
+}
+
+/* Minesweeper cell pressed effect */
+button:active {
+  transform: scale(0.97);
+}
+
+/* Terminal cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.terminal-cursor {
+  animation: blink 1s step-end infinite;
 }
