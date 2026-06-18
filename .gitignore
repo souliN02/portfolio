@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# private portfolio context / positioning notes (keep out of public repo)
+PORTFOLIO_CONTEXT.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
