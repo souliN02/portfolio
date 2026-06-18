@@ -56,6 +56,45 @@ body {
 }
 .animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
 
+/* Window open animation (scale up from slightly small) */
+@keyframes winOpen {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-winOpen { animation: winOpen 0.14s ease-out both; transform-origin: top center; }
+
+/* Start menu slide up */
+@keyframes startOpen {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-startOpen { animation: startOpen 0.16s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+
+/* Window frame — outer XP Luna shadow + rounded top */
+.xp-window {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Title bar control buttons */
+.xp-tbtn {
+  width: 22px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  color: #fff;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: linear-gradient(180deg, #5b9bff 0%, #2f6fd6 48%, #1f56b0 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.xp-tbtn:hover { filter: brightness(1.15); }
+.xp-tbtn:active { filter: brightness(0.9); }
+.xp-tbtn-close {
+  background: linear-gradient(180deg, #f08a7a 0%, #d8442c 48%, #b32410 100%);
+  border-color: rgba(255, 220, 210, 0.6);
+}
+
 /* XP desktop icon text shadow for readability */
 .xp-icon-label {
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5);
@@ -95,7 +134,60 @@ body {
 .xp-systray {
   background: linear-gradient(180deg, #0f6ab4 0%, #1a7fd4 50%, #0f6ab4 100%);
   border-left: 1px solid #0a4a7a;
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.25), inset 2px 0 0 rgba(255, 255, 255, 0.15);
 }
+
+/* Active Start button (pressed look while menu is open) */
+.xp-start-btn-active { filter: brightness(0.85); }
+
+/* Taskbar app buttons */
+.xp-taskbar-apps { scrollbar-width: none; }
+.xp-taskbar-apps::-webkit-scrollbar { display: none; }
+.xp-taskbtn {
+  color: #fff;
+  background: linear-gradient(180deg, #3f86d6 0%, #2f6fc4 50%, #2862b4 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.xp-taskbtn:hover { filter: brightness(1.1); }
+.xp-taskbtn-active {
+  color: #fff;
+  background: linear-gradient(180deg, #1d4f9c 0%, #245dab 50%, #2f6fc4 100%);
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+  font-weight: 700;
+}
+
+/* Start menu */
+.xp-startmenu {
+  border: 1px solid #0a3a8a;
+  border-radius: 8px 8px 2px 2px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background: #fff;
+}
+.xp-startmenu-header {
+  background: linear-gradient(180deg, #1f6fd6 0%, #1c5fc0 45%, #2a78d8 100%);
+  border-bottom: 2px solid #ff9c1a;
+}
+.xp-startmenu-right {
+  background: linear-gradient(180deg, #d3e5fa 0%, #c3dbf6 100%);
+  border-left: 1px solid #aac4ec;
+}
+.xp-startmenu-footer {
+  background: linear-gradient(180deg, #2a78d8 0%, #1c5fc0 55%, #18539e 100%);
+  border-top: 1px solid #ff9c1a;
+}
+.xp-start-sep { height: 1px; margin: 4px 10px; background: #9db8e0; }
+
+/* Desktop right-click context menu */
+.xp-ctxmenu {
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid #8a8a8a;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.35);
+}
+.xp-ctx-sep { height: 1px; margin: 3px 6px; background: #d4d0c8; }
 
 /* Minesweeper cell pressed effect */
 button:active {
