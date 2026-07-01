@@ -880,23 +880,31 @@ const PROJECTS = [
     links: [],
   },
   {
-    id: "oddslens",
+    id: "linedrift",
     group: "building",
-    title: "OddsLens",
+    title: "LineDrift",
     period: "2026",
     accent: "from-emerald-500 to-teal-500",
     icon: Activity,
-    badges: [{ label: "Building", cls: "bg-yellow-500 text-black" }, { label: "Live", cls: "bg-green-600 text-white" }],
-    summary: "A football odds tracker that snapshots bookmaker odds over time, computes no-vig consensus probabilities, and flags value.",
-    details: [
-      "Captures odds snapshots over time to track line movement.",
-      "Computes no-vig consensus probabilities across bookmakers.",
-      "Flags value where bookmaker odds drift from the consensus.",
+    image: "/linedrift-dashboard.png",
+    badges: [
+      { label: "Data pipeline", cls: "bg-cyan-600 text-white" },
+      { label: "Building", cls: "bg-yellow-500 text-black" },
+      { label: "Live", cls: "bg-green-600 text-white" },
     ],
-    tech: ["Next.js", "TypeScript", "Tailwind CSS"],
+    summary:
+      "A football odds tracker that builds its own historical dataset under a hard constraint of 500 free API credits a month. A scheduled job snapshots bookmaker odds into Postgres every 4 hours, then pure, unit-tested functions compute no-vig fair probabilities and flag prices that beat the market consensus across the Premier League, Danish Superliga, and 2026 FIFA World Cup. An educational analytics and data-engineering project, not a betting product.",
+    details: [
+      "Constraint-driven data pipeline, not a demo: free odds APIs only expose the current price, so a scheduled GitHub Actions job snapshots odds every 4 hours to build its own history, all inside a 500-credit/month budget that every architectural decision falls out of.",
+      "No-vig value engine written test-first as pure functions: implied probability, overround (vig), no-vig fair probabilities, market consensus across 3 or more books, and edge-vs-consensus value flags.",
+      "Data integrity by design: odds stored as Postgres numeric (never float) to avoid rounding drift, with Zod validating every external API response at a single boundary.",
+      "React Server Components read the database directly, so there is no client fetching on first paint, and GitHub Actions runs the scheduled ingestion because Vercel Hobby cron is limited to daily runs.",
+      "Proof it holds up: strict TypeScript with no any, 111 tests, CI (lint, typecheck, test, build) green on every PR, and Lighthouse 94 to 100 across performance, accessibility, best practices, and SEO.",
+    ],
+    tech: ["Next.js", "TypeScript", "Tailwind + shadcn/ui", "Drizzle ORM", "Neon Postgres", "Zod", "Recharts", "Vitest", "GitHub Actions"],
     links: [
-      { label: "Live demo", href: "https://oddslens-mocha.vercel.app", live: true },
-      { label: "GitHub", href: "https://github.com/souliN02/oddslens" },
+      { label: "Live demo", href: "https://linedrift.vercel.app", live: true },
+      { label: "GitHub", href: "https://github.com/souliN02/linedrift" },
     ],
   },
   {
@@ -1046,6 +1054,18 @@ function ProjectsWindow() {
                       >
                         <div className="px-3 pb-3 space-y-2">
                           <div className="p-2 rounded border border-gray-200 bg-gray-50 text-[11px]">{p.summary}</div>
+                          {p.image && (
+                            <a
+                              href={p.links?.find((l) => l.live)?.href || p.image}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`Open ${p.title}`}
+                              className="block rounded border border-gray-200 overflow-hidden bg-black/5 hover:ring-1 hover:ring-blue-400 transition"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={p.image} alt={`${p.title} dashboard screenshot`} loading="lazy" className="w-full h-auto block" />
+                            </a>
+                          )}
                           <div className="grid sm:grid-cols-2 gap-2">
                             <div className="rounded border border-gray-200 bg-white p-2">
                               <p className="text-[10px] font-bold mb-1">Highlights</p>
@@ -1242,7 +1262,7 @@ Getting around:
   - Right-click the desktop for more options.
 
 Currently building:
-  - OddsLens  : football odds tracker (no-vig value)
+  - LineDrift : football odds tracker (no-vig value)
   - Risk      : real-time multiplayer board game
 
 Flagship:
