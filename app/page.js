@@ -928,6 +928,39 @@ const PROJECTS = [
     ],
   },
   {
+    id: "setsaga",
+    group: "personal",
+    title: "SetSaga",
+    period: "2026",
+    accent: "from-indigo-500 to-violet-600",
+    icon: Award,
+    badges: [
+      { label: "Mobile", cls: "bg-indigo-600 text-white" },
+      { label: "Offline-first", cls: "bg-gray-800 text-white" },
+      { label: "v0.1.0", cls: "bg-green-600 text-white" },
+    ],
+    summary:
+      "A gamified, offline-first workout tracker for Android and iOS, built solo. Log sets, reps and weight; the app turns consistency into XP, levels, streaks, badges and automatically detected personal records.",
+    details: [
+      "Local-first by design: all data lives in SQLite on the phone. No accounts, no backend, no network calls. Database migrations are bundled and applied on-device.",
+      "The gamification engine is pure functions built test-first (211 tests), and all XP, streak, and badge state is derived from the workout data rather than stored, so it can never drift out of sync.",
+      "Crash-safe write-through logging: every set is persisted the moment it is confirmed, so killing the app mid-workout loses nothing.",
+      "Built AI-first with Claude Code in six planned phases, one PR per phase, CI green on every merge. The README has an \"Engineering decisions\" section written for technical reviewers.",
+    ],
+    tech: ["Expo / React Native", "TypeScript (strict)", "SQLite + Drizzle ORM", "Zustand", "Victory Native", "jest-expo", "GitHub Actions"],
+    links: [
+      { label: "GitHub", href: "https://github.com/souliN02/setsaga" },
+      { label: "APK release (v0.1.0)", href: "https://github.com/souliN02/setsaga/releases/tag/v0.1.0" },
+    ],
+    media: [
+      { src: "/setsaga/demo.gif", alt: "SetSaga demo" },
+      { src: "/setsaga/home.png", alt: "Home screen with XP and level progress" },
+      { src: "/setsaga/workout.png", alt: "Workout logging screen" },
+      { src: "/setsaga/charts.png", alt: "Progress charts" },
+      { src: "/setsaga/achievements.png", alt: "Achievements and badges" },
+    ],
+  },
+  {
     id: "promptfuzz",
     group: "personal",
     title: "PromptFuzz-CLI",
@@ -1065,6 +1098,23 @@ function ProjectsWindow() {
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={p.image} alt={`${p.title} dashboard screenshot`} loading="lazy" className="w-full h-auto block" />
                             </a>
+                          )}
+                          {p.media && (
+                            <div className="grid grid-cols-5 gap-1.5">
+                              {p.media.map((m, i) => (
+                                <a
+                                  key={i}
+                                  href={m.src}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={m.alt}
+                                  className="block rounded border border-gray-200 overflow-hidden bg-black/5 hover:ring-1 hover:ring-blue-400 transition"
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={m.src} alt={m.alt} loading="lazy" style={{ aspectRatio: "720 / 1544" }} className="w-full block object-cover" />
+                                </a>
+                              ))}
+                            </div>
                           )}
                           <div className="grid sm:grid-cols-2 gap-2">
                             <div className="rounded border border-gray-200 bg-white p-2">
