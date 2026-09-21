@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import {
   ChevronDown,
   Link as LinkIcon,
@@ -145,6 +145,11 @@ function createSoundManager() {
 
 const ICON_SIZE = { w: 80, h: 100 };
 const GRID = 20;
+const TASKBAR_H = 30;
+
+// Phones (portrait or landscape): windows open full-screen and icons wrap into columns
+const COMPACT_QUERY = "(max-width: 639px), (max-height: 499px)";
+const isCompactViewport = () => window.matchMedia(COMPACT_QUERY).matches;
 
 /* ─── App registry: one entry per launchable window ─── */
 
@@ -170,11 +175,16 @@ const desktopIcons = [
   { id: "minesweeper", name: "Minesweeper" },
 ];
 
-function getDefaultIconPositions() {
-  const startX = 20, startY = 16, spacingY = 100;
+// One column on desktop; pass the desktop height (phones) to wrap icons into
+// extra columns so none end up under the taskbar
+function getDefaultIconPositions(wrapHeight) {
+  const startX = 20, startY = 16, spacingX = 100, spacingY = 100;
+  const perCol = wrapHeight
+    ? Math.max(1, Math.floor((wrapHeight - TASKBAR_H - startY - ICON_SIZE.h) / spacingY) + 1)
+    : desktopIcons.length;
   const defaults = {};
   desktopIcons.forEach((ic, i) => {
-    defaults[ic.id] = { x: startX, y: startY + i * spacingY };
+    defaults[ic.id] = { x: startX + Math.floor(i / perCol) * spacingX, y: startY + (i % perCol) * spacingY };
   });
   return defaults;
 }
@@ -206,7 +216,7 @@ export default function XpPortfolio() {
   // Boot screen
   const [booted, setBooted] = useState(false);
 
-  // Multi-window state: array of { id, type, title, x, y, w, h, z, min, max, prev }
+  // Multi-window state: array of { id, type, title, x, y, w, h, z, min, max }
   const [windows, setWindows] = useState([]);
   const zTop = useRef(10);
   const [activeId, setActiveId] = useState(null);
@@ -309,11 +319,19 @@ export default function XpPortfolio() {
         const maxY = (rect?.height ?? 700) - meta.h - 60;
         const x = Math.max(12, Math.min(80 + offset, Math.max(12, maxX)));
         const y = Math.max(12, Math.min(48 + offset, Math.max(12, maxY)));
+        const win = { id: type, type, title: meta.title, x, y, w: meta.w, h: meta.h, z, min: false, max: false };
+        if (isCompactViewport()) {
+          // Phones: open full-screen; Restore falls back to a window that fits the screen
+          Object.assign(win, {
+            x: 8,
+            y: 8,
+            w: Math.min(meta.w, (rect?.width ?? 1200) - 16),
+            h: Math.min(meta.h, (rect?.height ?? 700) - TASKBAR_H - 16),
+            max: true,
+          });
+        }
         setActiveId(type);
-        return [
-          ...prev,
-          { id: type, type, title: meta.title, x, y, w: meta.w, h: meta.h, z, min: false, max: false, prev: null },
-        ];
+        return [...prev, win];
       });
     },
     []
@@ -331,26 +349,10 @@ export default function XpPortfolio() {
     setActiveId((cur) => (cur === id ? null : cur));
   }, []);
 
+  // A maximized window is sized by CSS (so it follows rotation and browser resizes)
+  // and keeps its own x/y/w/h untouched, which is what Restore returns to
   const toggleMaximize = useCallback((id) => {
-    setWindows((prev) =>
-      prev.map((w) => {
-        if (w.id !== id) return w;
-        if (!w.max) {
-          const rect = containerRef.current?.getBoundingClientRect();
-          return {
-            ...w,
-            max: true,
-            prev: { x: w.x, y: w.y, w: w.w, h: w.h },
-            x: 0,
-            y: 0,
-            w: Math.round(rect?.width ?? window.innerWidth),
-            h: Math.round((rect?.height ?? window.innerHeight) - 30),
-          };
-        }
-        const p = w.prev || { x: 80, y: 48, w: APPS[w.type].w, h: APPS[w.type].h };
-        return { ...w, max: false, prev: null, ...p };
-      })
-    );
+    setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, max: !w.max } : w)));
   }, []);
 
   const taskbarClick = useCallback(
@@ -365,27 +367,33 @@ export default function XpPortfolio() {
     [activeId, focusWindow, minimizeWindow]
   );
 
-  /* ─── Icon dragging ─── */
-  const dragStateRef = useRef({ id: null, startX: 0, startY: 0, orig: { x: 0, y: 0 }, moved: false });
+  /* ─── Icon dragging (pointer events, so a finger can drag too) ─── */
+  const dragStateRef = useRef({ id: null, startX: 0, startY: 0, orig: { x: 0, y: 0 }, moved: false, touch: false });
+  const tapRef = useRef(null); // icon a finger just tapped, opened by the click that follows
 
-  const onIconMouseDown = (e, id) => {
+  const onIconPointerDown = (e, id) => {
     if (e.button !== 0) return;
-    e.preventDefault();
     setSelectedIcon(id);
     setStartOpen(false);
     setCtxMenu(null);
     soundsRef.current?.playClick();
     const pos = iconPositions[id] || { x: 20, y: 20 };
-    dragStateRef.current = { id, startX: e.clientX, startY: e.clientY, orig: { ...pos }, moved: false };
-    document.addEventListener("mousemove", onIconMouseMove);
-    document.addEventListener("mouseup", onIconMouseUp, { once: true });
+    dragStateRef.current = {
+      id, startX: e.clientX, startY: e.clientY, orig: { ...pos }, moved: false, touch: e.pointerType !== "mouse",
+    };
+    document.addEventListener("pointermove", onIconPointerMove);
+    document.addEventListener("pointerup", onIconPointerUp);
+    document.addEventListener("pointercancel", onIconPointerUp);
   };
-  const onIconMouseMove = (e) => {
-    const { id, startX, startY, orig } = dragStateRef.current;
+  const onIconPointerMove = (e) => {
+    const { id, startX, startY, orig, touch } = dragStateRef.current;
     if (!id) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragStateRef.current.moved = true;
+    // Fingers wobble more than a mouse, so a touch needs a bigger move to count as a drag
+    const slop = touch ? 8 : 3;
+    if (Math.abs(dx) > slop || Math.abs(dy) > slop) dragStateRef.current.moved = true;
+    if (touch && !dragStateRef.current.moved) return;
     const rawX = orig.x + dx;
     const rawY = orig.y + dy;
     const nx = e.altKey ? rawX : Math.round(rawX / GRID) * GRID;
@@ -396,17 +404,27 @@ export default function XpPortfolio() {
       return next;
     });
   };
-  const onIconMouseUp = () => {
-    const { id, moved } = dragStateRef.current;
+  const onIconPointerUp = (e) => {
+    const { id, moved, touch } = dragStateRef.current;
     if (id && moved) {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(iconPosRef.current)); } catch {}
     }
-    dragStateRef.current = { id: null, startX: 0, startY: 0, orig: { x: 0, y: 0 }, moved: false };
-    document.removeEventListener("mousemove", onIconMouseMove);
+    // Touch screens have no double-click, so a tap that didn't drag opens the app
+    tapRef.current = id && touch && !moved && e.type === "pointerup" ? id : null;
+    dragStateRef.current = { id: null, startX: 0, startY: 0, orig: { x: 0, y: 0 }, moved: false, touch: false };
+    document.removeEventListener("pointermove", onIconPointerMove);
+    document.removeEventListener("pointerup", onIconPointerUp);
+    document.removeEventListener("pointercancel", onIconPointerUp);
+  };
+  // Opening on the click (not on pointerup) keeps the tap from landing on the new window
+  const onIconClick = (id) => {
+    if (tapRef.current !== id) return;
+    tapRef.current = null;
+    openApp(id);
   };
 
   /* ─── Window move/resize (per window) ─── */
-  const onTitleMouseDown = (e, w) => {
+  const onTitlePointerDown = (e, w) => {
     focusWindow(w.id);
     if (w.max) return;
     const startX = e.clientX;
@@ -418,14 +436,16 @@ export default function XpPortfolio() {
       setWindows((prev) => prev.map((win) => (win.id === w.id ? { ...win, x: nx, y: Math.max(0, ny) } : win)));
     };
     const onUp = () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
   };
 
-  const onResizeMouseDown = (e, w) => {
+  const onResizePointerDown = (e, w) => {
     e.stopPropagation();
     focusWindow(w.id);
     if (w.max) return;
@@ -438,11 +458,13 @@ export default function XpPortfolio() {
       setWindows((prev) => prev.map((win) => (win.id === w.id ? { ...win, w: nw, h: nh } : win)));
     };
     const onUp = () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
   };
 
   /* ─── Open via desktop icon double-click ─── */
@@ -459,17 +481,76 @@ export default function XpPortfolio() {
       setCtxMenu(null);
     }
   };
-  const onDesktopContext = (e) => {
-    e.preventDefault();
+  const openCtxMenuAt = (clientX, clientY) => {
     setStartOpen(false);
     const rect = containerRef.current?.getBoundingClientRect();
-    const x = e.clientX - (rect?.left ?? 0);
-    const y = e.clientY - (rect?.top ?? 0);
+    const x = clientX - (rect?.left ?? 0);
+    const y = clientY - (rect?.top ?? 0);
     setCtxMenu({ x, y });
   };
+  const onDesktopContext = (e) => {
+    e.preventDefault();
+    openCtxMenuAt(e.clientX, e.clientY);
+  };
+
+  // Touch screens have no right-click: long-press the desktop for the context menu
+  const longPressRef = useRef(null);
+  const cancelLongPress = () => {
+    clearTimeout(longPressRef.current?.timer);
+    longPressRef.current = null;
+  };
+  const onDesktopPointerDown = (e) => {
+    if (e.pointerType === "mouse" || e.target !== e.currentTarget) return;
+    const { clientX, clientY } = e;
+    cancelLongPress();
+    longPressRef.current = {
+      x: clientX,
+      y: clientY,
+      timer: setTimeout(() => {
+        longPressRef.current = null;
+        openCtxMenuAt(clientX, clientY);
+      }, 500),
+    };
+  };
+  const onDesktopPointerMove = (e) => {
+    const lp = longPressRef.current;
+    if (lp && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 10) cancelLongPress();
+  };
+
+  // Keep the context menu fully on screen when opened near an edge
+  const ctxMenuRef = useRef(null);
+  useLayoutEffect(() => {
+    const el = ctxMenuRef.current;
+    const box = containerRef.current;
+    if (!ctxMenu || !el || !box) return;
+    const x = Math.max(0, Math.min(ctxMenu.x, box.clientWidth - el.offsetWidth));
+    const y = Math.max(0, Math.min(ctxMenu.y, box.clientHeight - el.offsetHeight));
+    if (x !== ctxMenu.x || y !== ctxMenu.y) setCtxMenu({ x, y });
+  }, [ctxMenu]);
+
+  // Phones: re-flow the icons into columns whenever any would sit off screen or
+  // under the taskbar (first visit, rotation, positions saved on a bigger screen)
+  useLayoutEffect(() => {
+    if (!booted) return;
+    const fit = () => {
+      const box = containerRef.current;
+      if (!box || !isCompactViewport()) return;
+      const pos = iconPosRef.current;
+      const offScreen = desktopIcons.some(
+        ({ id }) => pos[id].x + ICON_SIZE.w > box.clientWidth || pos[id].y + ICON_SIZE.h > box.clientHeight - TASKBAR_H
+      );
+      if (!offScreen) return;
+      const next = getDefaultIconPositions(box.clientHeight);
+      iconPosRef.current = next;
+      setIconPositions(next);
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [booted]);
 
   const arrangeIcons = () => {
-    saveIconPositions(getDefaultIconPositions());
+    saveIconPositions(getDefaultIconPositions(isCompactViewport() ? containerRef.current?.clientHeight : undefined));
     setCtxMenu(null);
     soundsRef.current?.playClick();
   };
@@ -508,7 +589,7 @@ export default function XpPortfolio() {
     <div
       ref={containerRef}
       suppressHydrationWarning
-      className="relative w-screen h-screen bg-[url('/xp-wallpaper.jpg')] bg-cover bg-center overflow-hidden select-none"
+      className="relative w-screen h-dvh bg-[url('/xp-wallpaper.jpg')] bg-cover bg-center overflow-hidden select-none touch-manipulation"
       style={{ fontFamily: "Tahoma, Arial, Helvetica, sans-serif" }}
     >
       {/* ─── Desktop icons ─── */}
@@ -516,6 +597,10 @@ export default function XpPortfolio() {
         className="absolute inset-0"
         onMouseDown={onDesktopMouseDown}
         onContextMenu={onDesktopContext}
+        onPointerDown={onDesktopPointerDown}
+        onPointerMove={onDesktopPointerMove}
+        onPointerUp={cancelLongPress}
+        onPointerCancel={cancelLongPress}
       >
         {desktopIcons.map((icon) => {
           const pos = iconPositions[icon.id] || { x: 20, y: 20 };
@@ -529,9 +614,11 @@ export default function XpPortfolio() {
                 width: `${ICON_SIZE.w}px`,
                 transition: "left 60ms linear, top 60ms linear",
               }}
-              onMouseDown={(e) => onIconMouseDown(e, icon.id)}
+              onPointerDown={(e) => onIconPointerDown(e, icon.id)}
+              onMouseDown={(e) => e.button === 0 && e.preventDefault()}
+              onClick={() => onIconClick(icon.id)}
               onDoubleClick={() => handleDoubleClick(icon.id)}
-              className="absolute flex flex-col items-center cursor-pointer group"
+              className="absolute flex flex-col items-center cursor-pointer group touch-none [-webkit-touch-callout:none]"
             >
               <div
                 className={`p-1 rounded ${
@@ -557,6 +644,7 @@ export default function XpPortfolio() {
       {/* ─── Desktop right-click context menu ─── */}
       {ctxMenu && (
         <div
+          ref={ctxMenuRef}
           className="absolute z-40 xp-ctxmenu text-[11px] text-black py-1"
           style={{ left: ctxMenu.x, top: ctxMenu.y }}
           onMouseDown={(e) => e.stopPropagation()}
@@ -576,15 +664,19 @@ export default function XpPortfolio() {
         return (
           <div
             key={w.id}
-            style={{ top: w.y, left: w.x, width: w.w, height: w.h, zIndex: w.z }}
+            style={
+              w.max
+                ? { top: 0, left: 0, width: "100%", height: `calc(100% - ${TASKBAR_H}px)`, zIndex: w.z }
+                : { top: w.y, left: w.x, width: w.w, height: w.h, zIndex: w.z }
+            }
             className={`absolute flex flex-col xp-window animate-winOpen ${w.max ? "rounded-none" : "rounded-t-lg"}`}
             onMouseDown={() => focusWindow(w.id)}
           >
             {/* Title bar */}
             <div
-              onMouseDown={(e) => onTitleMouseDown(e, w)}
+              onPointerDown={(e) => onTitlePointerDown(e, w)}
               onDoubleClick={() => toggleMaximize(w.id)}
-              className={`${isActive ? "xp-titlebar" : "xp-titlebar-inactive"} text-white pl-2 pr-1.5 py-[3px] font-bold flex items-center justify-between cursor-move select-none text-[12px] ${
+              className={`${isActive ? "xp-titlebar" : "xp-titlebar-inactive"} text-white pl-2 pr-1.5 py-[3px] font-bold flex items-center justify-between cursor-move select-none touch-none text-[12px] ${
                 w.max ? "" : "rounded-t-lg"
               }`}
             >
@@ -630,8 +722,8 @@ export default function XpPortfolio() {
             {/* Resize handle */}
             {!w.max && (
               <div
-                onMouseDown={(e) => onResizeMouseDown(e, w)}
-                className="absolute right-0 bottom-0 w-4 h-4 cursor-se-resize"
+                onPointerDown={(e) => onResizePointerDown(e, w)}
+                className="absolute right-0 bottom-0 w-4 h-4 pointer-coarse:w-7 pointer-coarse:h-7 cursor-se-resize touch-none"
                 title="Resize"
               >
                 <svg width="16" height="16" className="absolute right-0 bottom-0 opacity-50">
@@ -649,7 +741,7 @@ export default function XpPortfolio() {
       {startOpen && (
         <>
           <div className="fixed inset-0 z-40" onMouseDown={() => setStartOpen(false)} />
-          <div className="absolute bottom-[30px] left-0 z-50 w-[320px] xp-startmenu animate-startOpen text-black">
+          <div className="absolute bottom-[30px] left-0 z-50 w-[320px] max-w-full xp-startmenu animate-startOpen text-black">
             {/* Header */}
             <div className="xp-startmenu-header flex items-center gap-2 px-3 py-2 text-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -725,21 +817,22 @@ export default function XpPortfolio() {
               <button
                 key={w.id}
                 onClick={() => taskbarClick(w)}
-                className={`flex items-center gap-1.5 px-2 h-[24px] rounded-sm text-left truncate min-w-[120px] max-w-[170px] text-[11px] transition ${
+                className={`flex items-center gap-1.5 px-2 h-[24px] rounded-sm text-left truncate min-w-[120px] max-sm:min-w-[36px] max-w-[170px] text-[11px] transition ${
                   isActive ? "xp-taskbtn-active" : "xp-taskbtn"
                 }`}
                 title={w.title}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={APPS[w.type].icon} alt="" width={16} height={16} className="shrink-0" draggable={false} />
-                <span className="truncate">{w.title}</span>
+                {/* Phones: with 3+ windows there's only room for icons */}
+                <span className={`truncate ${windows.length > 2 ? "max-sm:hidden" : ""}`}>{w.title}</span>
               </button>
             );
           })}
         </div>
 
         {/* System tray */}
-        <div className="xp-systray flex items-center gap-2.5 h-full px-2.5 text-[11px]" title={clockDate}>
+        <div className="xp-systray flex items-center gap-2.5 h-full px-2.5 text-[11px] shrink-0 whitespace-nowrap" title={clockDate}>
           <Wifi className="w-3.5 h-3.5 text-white/90" />
           <Volume2 className="w-3.5 h-3.5 text-white/90" />
           <span className="text-white/95 tabular-nums">{clockTime}</span>
@@ -757,7 +850,7 @@ function CtxItem({ icon: Icon, children, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-3 py-1 text-left hover:bg-[#2F71CD] hover:text-white"
+      className="w-full flex items-center gap-2 px-3 py-1 pointer-coarse:py-2 text-left hover:bg-[#2F71CD] hover:text-white"
     >
       {Icon && <Icon className="w-3.5 h-3.5" />}
       <span>{children}</span>
@@ -824,13 +917,43 @@ function SectionTitle({ icon: Icon, color = "blue", children }) {
    ═════════════════════════════════════════════ */
 
 function CVWindow() {
+  // Many phone browsers can't show a PDF inside a page; offer to open it instead
+  const [inlinePdf, setInlinePdf] = useState(true);
+  useEffect(() => {
+    if (navigator.pdfViewerEnabled === false) setInlinePdf(false);
+  }, []);
+
   return (
     <div className="h-full w-full flex flex-col">
       <div className="bg-[#ECE9D8] border-b border-gray-300 px-2 py-1 text-[11px] text-gray-700">
         Document Viewer - Bekir_CV.pdf
+        <a
+          href="/Bekir_CV.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden pointer-coarse:inline float-right font-bold text-blue-700 underline"
+        >
+          Open full PDF
+        </a>
       </div>
       <div className="flex-grow overflow-auto bg-white">
-        <iframe src="/Bekir_CV.pdf" title="Bekir's CV" className="w-full h-full border-none" />
+        {inlinePdf ? (
+          <iframe src="/Bekir_CV.pdf" title="Bekir's CV" className="w-full h-full border-none" />
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center gap-3 p-4 text-center text-[12px] text-gray-700">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={XP_ICONS.cv} alt="" width={48} height={48} draggable={false} />
+            <p>This browser can&apos;t preview PDFs inside the page.</p>
+            <a
+              href="/Bekir_CV.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded bg-blue-600 text-white font-bold hover:bg-blue-700"
+            >
+              Open Bekir_CV.pdf
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1100,7 +1223,7 @@ function ProjectsWindow() {
                             </a>
                           )}
                           {p.media && (
-                            <div className="grid grid-cols-5 gap-1.5">
+                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                               {p.media.map((m, i) => (
                                 <a
                                   key={i}
@@ -1294,6 +1417,8 @@ function AboutWindow() {
 }
 
 function NotepadWindow() {
+  // Describe touch gestures on phones, which have no double-click or right-click
+  const [touch] = useState(() => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches);
   const text = `readme.txt
 ==============================
 
@@ -1305,11 +1430,11 @@ production software AI-first, using Claude every day as a
 core part of how I develop.
 
 Getting around:
-  - Double-click the desktop icons, or use the Start menu.
+  - ${touch ? "Tap" : "Double-click"} the desktop icons, or use the Start menu.
   - "My Projects" has my featured and current work.
   - "About Me" has the full bio, skills, and experience.
   - Windows can be dragged, resized, minimized and stacked.
-  - Right-click the desktop for more options.
+  - ${touch ? "Long-press" : "Right-click"} the desktop for more options.
 
 Currently building:
   - LineDrift : football odds tracker (no-vig value)

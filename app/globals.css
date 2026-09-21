@@ -95,6 +95,13 @@ body {
   border-color: rgba(255, 220, 210, 0.6);
 }
 
+/* Touch screens: bigger title bar buttons so a finger can hit them, and no
+   pull-to-refresh or rubber-banding (a reload replays the boot screen) */
+@media (pointer: coarse) {
+  .xp-tbtn { width: 30px; height: 26px; font-size: 12px; }
+  html, body { overscroll-behavior: none; }
+}
+
 /* XP desktop icon text shadow for readability */
 .xp-icon-label {
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5);
@@ -163,6 +170,9 @@ body {
   border: 1px solid #0a3a8a;
   border-radius: 8px 8px 2px 2px;
   overflow: hidden;
+  /* Short screens (landscape phones): scroll instead of running off the top */
+  max-height: calc(100% - 30px);
+  overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   background: #fff;
 }

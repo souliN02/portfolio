@@ -98,6 +98,7 @@ export default function MinesweeperWindow() {
   const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
   const [time, setTime] = useState(0);
   const [flagCount, setFlagCount] = useState(0);
+  const [flagMode, setFlagMode] = useState(false); // touch screens: taps place flags
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -117,8 +118,26 @@ export default function MinesweeperWindow() {
     setFlagCount(0);
   }, []);
 
+  const toggleFlag = useCallback(
+    (r, c) => {
+      if (gameState === "won" || gameState === "lost") return;
+      if (board[r][c].isRevealed) return;
+
+      const newBoard = board.map((row) => row.map((cell) => ({ ...cell })));
+      const wasFlagged = newBoard[r][c].isFlagged;
+      newBoard[r][c].isFlagged = !wasFlagged;
+      setBoard(newBoard);
+      setFlagCount((f) => f + (wasFlagged ? -1 : 1));
+    },
+    [board, gameState]
+  );
+
   const handleClick = useCallback(
     (r, c) => {
+      if (flagMode) {
+        toggleFlag(r, c);
+        return;
+      }
       if (gameState === "won" || gameState === "lost") return;
       if (board[r][c].isFlagged || board[r][c].isRevealed) return;
 
@@ -152,22 +171,15 @@ export default function MinesweeperWindow() {
         clearInterval(timerRef.current);
       }
     },
-    [board, gameState]
+    [board, gameState, flagMode, toggleFlag]
   );
 
   const handleRightClick = useCallback(
     (e, r, c) => {
       e.preventDefault();
-      if (gameState === "won" || gameState === "lost") return;
-      if (board[r][c].isRevealed) return;
-
-      const newBoard = board.map((row) => row.map((cell) => ({ ...cell })));
-      const wasFlagged = newBoard[r][c].isFlagged;
-      newBoard[r][c].isFlagged = !wasFlagged;
-      setBoard(newBoard);
-      setFlagCount((f) => f + (wasFlagged ? -1 : 1));
+      toggleFlag(r, c);
     },
-    [board, gameState]
+    [toggleFlag]
   );
 
   const smiley = gameState === "won" ? "😎" : gameState === "lost" ? "😵" : "🙂";
@@ -291,9 +303,24 @@ export default function MinesweeperWindow() {
         </div>
       )}
 
+      {/* Touch screens have no right-click, so flagging gets its own toggle */}
+      <button
+        onClick={() => setFlagMode((f) => !f)}
+        aria-pressed={flagMode}
+        className="hidden pointer-coarse:flex items-center gap-1 mt-3 px-3 py-1.5 text-xs font-bold"
+        style={{
+          border: flagMode ? "2px inset #808080" : "2px outset #DFDFDF",
+          backgroundColor: flagMode ? "#D0D0D0" : "#C0C0C0",
+        }}
+      >
+        🚩 Flag mode: {flagMode ? "On" : "Off"}
+      </button>
+
       {/* Instructions */}
       <div className="mt-2 text-[10px] text-gray-600 text-center">
-        Left-click to reveal · Right-click to flag · {ROWS}×{COLS} · {MINES} mines
+        <span className="pointer-coarse:hidden">Left-click to reveal · Right-click to flag</span>
+        <span className="hidden pointer-coarse:inline">Tap to reveal · Flag mode to flag</span>
+        {" "}· {ROWS}×{COLS} · {MINES} mines
       </div>
     </div>
   );

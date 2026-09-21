@@ -664,10 +664,12 @@ export default function TerminalWindow({ onRequestClose, onOpenApp }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-grow bg-transparent outline-none border-none caret-current"
+              className="flex-grow bg-transparent outline-none border-none caret-current pointer-coarse:text-[16px]"
               style={{ color: colors.fg, caretColor: colors.fg }}
               spellCheck={false}
               autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
             />
           </div>
         )}
