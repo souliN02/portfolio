@@ -679,7 +679,7 @@ export default function XpPortfolio() {
                 ))}
               </div>
               <div className="w-[42%] xp-startmenu-right py-1">
-                <StartLink icon={Globe} href="https://portfolio-bekir.vercel.app">Portfolio</StartLink>
+                <StartLink icon={Globe} href="https://bekirsaliv.dk">Portfolio</StartLink>
                 <StartLink icon={GitHubMark} href="https://github.com/souliN02">GitHub</StartLink>
                 <StartLink icon={LinkIcon} href="https://www.linkedin.com/in/bekirsaliv02/">LinkedIn</StartLink>
                 <div className="xp-start-sep" />
@@ -903,7 +903,7 @@ const PROJECTS = [
     ],
     tech: ["Next.js", "TypeScript", "Tailwind + shadcn/ui", "Drizzle ORM", "Neon Postgres", "Zod", "Recharts", "Vitest", "GitHub Actions"],
     links: [
-      { label: "Live demo", href: "https://linedrift.vercel.app", live: true },
+      { label: "Live demo", href: "https://linedrift.bekirsaliv.dk", live: true },
       { label: "GitHub", href: "https://github.com/souliN02/linedrift" },
     ],
   },
@@ -993,7 +993,7 @@ const PROJECTS = [
     ],
     tech: ["Next.js", "React", "Tailwind CSS"],
     links: [
-      { label: "Live", href: "https://portfolio-bekir.vercel.app", live: true },
+      { label: "Live", href: "https://bekirsaliv.dk", live: true },
       { label: "GitHub", href: "https://github.com/souliN02/portfolio" },
     ],
   },
@@ -1393,8 +1393,8 @@ function ContactWindow() {
 
           <div className="rounded border border-purple-200 bg-white p-2">
             <p className="text-[10px] text-gray-500">Portfolio</p>
-            <a href="https://portfolio-bekir.vercel.app" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-blue-700 underline hover:no-underline">
-              <Globe className="w-3 h-3" /> portfolio-bekir.vercel.app
+            <a href="https://bekirsaliv.dk" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-blue-700 underline hover:no-underline">
+              <Globe className="w-3 h-3" /> bekirsaliv.dk
             </a>
           </div>
 
