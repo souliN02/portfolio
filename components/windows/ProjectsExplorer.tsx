@@ -368,7 +368,7 @@ function ProjectDetail({ project: p }: { project: Project }) {
                   Open in IE
                 </button>
               )}
-              {p.links.length === 0 && <p className="text-[#555]">Internal tool, no public links. Ask me about it: {PROFILE.email}</p>}
+              {p.links.length === 0 && <p className="text-[#555]">No public link. Ask me about it: {PROFILE.email}</p>}
             </div>
           </fieldset>
         </div>

@@ -208,14 +208,14 @@ export const PROJECTS: Project[] = [
     group: "personal",
     title: "Jornada Inglês Br",
     period: "2025",
-    status: "Live",
+    status: "Archived",
     icon: ICON("Earth (fixed)"),
     tagline: "Landing site for an English-teaching company",
-    badges: ["Live"],
+    badges: ["Archived"],
     summary: "A landing site for Jornada Inglês Br showcasing the company identity, mission, and services.",
     details: ["Responsive landing page across desktop and mobile.", "Clear service sections with friendly, accessible navigation."],
     tech: ["Next.js", "React", "Tailwind CSS"],
-    links: [{ label: "Live", href: "https://jornadaingles.vercel.app/", kind: "live" }],
+    links: [],
   },
 ];
 
