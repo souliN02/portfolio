@@ -42,3 +42,6 @@ PORTFOLIO_CONTEXT.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ...but keep the template that documents them
+!.env.example

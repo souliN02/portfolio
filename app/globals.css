@@ -1,214 +1,495 @@
 @import "tailwindcss";
 
+/* ─── Luna palette ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --xp-face: #ece9d8;
+  --xp-frame: #0842db;
+  --xp-frame-inactive: #7a96df;
+  --xp-select: #316ac5;
+  --xp-link: #0c32a8;
+  --xp-link-hover: #2b72ff;
+  --xp-input-border: #7f9db9;
+  --xp-font: Tahoma, "Segoe UI", Verdana, Arial, sans-serif;
+  --xp-title-font: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: "Tahoma", Arial, Helvetica, sans-serif;
+  background: #000;
+  color: #000;
+  font-family: var(--xp-font);
 }
 
-/* XP Boot screen — 3 sliding blue blocks, just like the real thing */
-.xp-loader-blocks {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-}
-.xp-loader-blocks::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -40%;
-  height: 100%;
-  width: 30%;
-  background:
-    linear-gradient(90deg,
-      transparent 0%,
-      #3B82F6 8%, #3B82F6 20%, transparent 22%,
-      transparent 30%,
-      #3B82F6 32%, #3B82F6 48%, transparent 50%,
-      transparent 58%,
-      #3B82F6 60%, #3B82F6 76%, transparent 78%
-    );
-  animation: xpSlide 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-@keyframes xpSlide {
-  0%   { left: -40%; }
-  100% { left: 110%; }
+/* Touch screens: no pull-to-refresh or rubber-banding (a reload replays the boot) */
+@media (pointer: coarse) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
 }
 
-/* XP fade-in animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Animations ─── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
-
-/* Window open animation (scale up from slightly small) */
 @keyframes winOpen {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
-.animate-winOpen { animation: winOpen 0.14s ease-out both; transform-origin: top center; }
-
-/* Start menu slide up */
 @keyframes startOpen {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-startOpen { animation: startOpen 0.16s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
-
-/* Window frame — outer XP Luna shadow + rounded top */
-.xp-window {
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-/* Title bar control buttons */
-.xp-tbtn {
-  width: 22px;
-  height: 21px;
-  display: grid;
-  place-items: center;
-  font-size: 10px;
-  color: #fff;
-  border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: linear-gradient(180deg, #5b9bff 0%, #2f6fd6 48%, #1f56b0 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-.xp-tbtn:hover { filter: brightness(1.15); }
-.xp-tbtn:active { filter: brightness(0.9); }
-.xp-tbtn-close {
-  background: linear-gradient(180deg, #f08a7a 0%, #d8442c 48%, #b32410 100%);
-  border-color: rgba(255, 220, 210, 0.6);
-}
-
-/* Touch screens: bigger title bar buttons so a finger can hit them, and no
-   pull-to-refresh or rubber-banding (a reload replays the boot screen) */
-@media (pointer: coarse) {
-  .xp-tbtn { width: 30px; height: 26px; font-size: 12px; }
-  html, body { overscroll-behavior: none; }
-}
-
-/* XP desktop icon text shadow for readability */
-.xp-icon-label {
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5);
-}
-
-/* XP Window title bar gradient */
-.xp-titlebar {
-  background: linear-gradient(180deg, #0A246A 0%, #0F3699 8%, #3A6EA5 40%, #3163A5 88%, #003399 93%, #003399 100%);
-}
-
-.xp-titlebar-inactive {
-  background: linear-gradient(180deg, #7B96AC 0%, #8EAEC1 8%, #99B4C6 40%, #8EAEC1 88%, #7B96AC 93%, #7B96AC 100%);
-}
-
-/* XP Start button gradient */
-.xp-start-btn {
-  background: linear-gradient(180deg, #388e3c 0%, #2e7d32 40%, #1b5e20 100%);
-  border-radius: 0 8px 8px 0;
-  border: 1px solid #0d3f0f;
-  padding: 2px 10px 2px 6px;
-  cursor: pointer;
-  transition: filter 0.1s;
-}
-.xp-start-btn:hover {
-  filter: brightness(1.15);
-}
-.xp-start-btn:active {
-  filter: brightness(0.9);
-}
-
-/* XP Taskbar gradient */
-.xp-taskbar {
-  background: linear-gradient(180deg, #1f3f7a 0%, #2b5daa 3%, #3174c2 6%, #3c89d0 10%, #245dab 12%, #245dab 88%, #1e4e9a 92%, #183d82 96%, #122d66 100%);
-}
-
-/* XP System tray area */
-.xp-systray {
-  background: linear-gradient(180deg, #0f6ab4 0%, #1a7fd4 50%, #0f6ab4 100%);
-  border-left: 1px solid #0a4a7a;
-  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.25), inset 2px 0 0 rgba(255, 255, 255, 0.15);
-}
-
-/* Active Start button (pressed look while menu is open) */
-.xp-start-btn-active { filter: brightness(0.85); }
-
-/* Taskbar app buttons */
-.xp-taskbar-apps { scrollbar-width: none; }
-.xp-taskbar-apps::-webkit-scrollbar { display: none; }
-.xp-taskbtn {
-  color: #fff;
-  background: linear-gradient(180deg, #3f86d6 0%, #2f6fc4 50%, #2862b4 100%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-.xp-taskbtn:hover { filter: brightness(1.1); }
-.xp-taskbtn-active {
-  color: #fff;
-  background: linear-gradient(180deg, #1d4f9c 0%, #245dab 50%, #2f6fc4 100%);
-  border: 1px solid rgba(0, 0, 0, 0.35);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
-  font-weight: 700;
-}
-
-/* Start menu */
-.xp-startmenu {
-  border: 1px solid #0a3a8a;
-  border-radius: 8px 8px 2px 2px;
-  overflow: hidden;
-  /* Short screens (landscape phones): scroll instead of running off the top */
-  max-height: calc(100% - 30px);
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  background: #fff;
-}
-.xp-startmenu-header {
-  background: linear-gradient(180deg, #1f6fd6 0%, #1c5fc0 45%, #2a78d8 100%);
-  border-bottom: 2px solid #ff9c1a;
-}
-.xp-startmenu-right {
-  background: linear-gradient(180deg, #d3e5fa 0%, #c3dbf6 100%);
-  border-left: 1px solid #aac4ec;
-}
-.xp-startmenu-footer {
-  background: linear-gradient(180deg, #2a78d8 0%, #1c5fc0 55%, #18539e 100%);
-  border-top: 1px solid #ff9c1a;
-}
-.xp-start-sep { height: 1px; margin: 4px 10px; background: #9db8e0; }
-
-/* Desktop right-click context menu */
-.xp-ctxmenu {
-  min-width: 200px;
-  background: #fff;
-  border: 1px solid #8a8a8a;
-  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.35);
-}
-.xp-ctx-sep { height: 1px; margin: 3px 6px; background: #d4d0c8; }
-
-/* Minesweeper cell pressed effect */
-button:active {
-  transform: scale(0.97);
-}
-
-/* Terminal cursor blink */
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
-.terminal-cursor {
-  animation: blink 1s step-end infinite;
+@keyframes balloonIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+
+@layer components {
+  .animate-fadeIn { animation: fadeIn 0.4s ease-out both; }
+  .animate-winOpen { animation: winOpen 0.14s ease-out both; transform-origin: top center; }
+  .animate-startOpen { animation: startOpen 0.16s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+  .terminal-cursor { animation: blink 1s step-end infinite; }
+
+  /* Turn Off dialog: the desktop fades to grey behind it, as XP did */
+  .xp-desaturate { filter: grayscale(1) brightness(0.92); transition: filter 1.2s ease; }
+
+  /* While a window is dragged or resized, iframes must not swallow the pointer */
+  .xp-dragging iframe { pointer-events: none; }
+
+  /* ─── Window frame ─── */
+  .xp-window {
+    border-radius: 8px 8px 0 0;
+    padding: 0 3px 3px;
+    background: var(--xp-frame);
+    box-shadow:
+      inset -1px -1px #00138c,
+      inset 1px 1px #0831d9,
+      inset -2px -2px #001ea0,
+      inset 2px 2px #166aee,
+      0 8px 28px rgba(0, 0, 0, 0.42),
+      0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  .xp-window[data-active="false"] {
+    background: var(--xp-frame-inactive);
+    box-shadow:
+      inset -1px -1px #5f78c4,
+      inset 1px 1px #8ba4e4,
+      0 6px 20px rgba(0, 0, 0, 0.3);
+  }
+  .xp-window[data-max="true"] { border-radius: 0; padding: 0; }
+
+  .xp-titlebar {
+    height: 30px;
+    margin: 0 -3px;
+    padding: 0 5px 0 7px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    color: #fff;
+    font: 700 13px/1 var(--xp-title-font);
+    text-shadow: 1px 1px #0f1089;
+    background: linear-gradient(180deg, #0997ff, #0053ee 8%, #0050ee 40%, #06f 88%, #06f 93%, #005bff 95%, #003dd7 96%, #003dd7);
+  }
+  .xp-window[data-active="false"] .xp-titlebar {
+    color: #d8e4f8;
+    text-shadow: none;
+    background: linear-gradient(180deg, #a9c2f5, #7a96df 8%, #7b97e0 40%, #87a4e8 88%, #87a4e8 93%, #809fe6 95%, #6f8bd6 96%, #6f8bd6);
+  }
+  .xp-window[data-max="true"] .xp-titlebar { margin: 0; border-radius: 0; }
+
+  .xp-tbtn {
+    width: 21px;
+    height: 21px;
+    display: grid;
+    place-items: center;
+    border-radius: 3px;
+    border: 1px solid #fff;
+    color: #fff;
+    background: radial-gradient(circle at 90% 90%, #0054e9 0%, #2263d5 55%, #4479e4 70%, #a3bbec 90%, #fff 100%);
+    flex-shrink: 0;
+  }
+  .xp-tbtn:hover { filter: brightness(1.12); }
+  .xp-tbtn:active { filter: brightness(0.85); }
+  .xp-tbtn-close { background: radial-gradient(circle at 90% 90%, #cc4600 0%, #dc6527 55%, #cd7546 70%, #ffccb2 90%, #fff 100%); }
+  .xp-window[data-active="false"] .xp-tbtn { opacity: 0.75; }
+  @media (pointer: coarse) {
+    .xp-tbtn { width: 30px; height: 26px; }
+  }
+
+  /* ─── Controls ─── */
+  .xp-button {
+    font: 11px var(--xp-font);
+    color: #000;
+    min-width: 75px;
+    min-height: 23px;
+    padding: 0 12px;
+    border: 1px solid #003c74;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #fff, #ecebe5 86%, #d8d0c4);
+  }
+  .xp-button:not(:disabled):hover {
+    box-shadow: inset -1px 1px #fff0cf, inset 1px 2px #fdd889, inset -2px 2px #fbc761, inset 2px -2px #e5a01a;
+  }
+  .xp-button:not(:disabled):active {
+    background: linear-gradient(180deg, #cdcac3, #e3e3db 8%, #e5e5de 94%, #f2f2f1);
+  }
+  .xp-button:focus-visible {
+    outline: 1px dotted #000;
+    outline-offset: -4px;
+    box-shadow: inset -1px 1px #cee7ff, inset 1px 2px #98b8ea, inset -2px 2px #bcd4f6, inset 1px -1px #89ade4, inset 2px -2px #89ade4;
+  }
+  .xp-button:disabled { color: #aca899; border-color: #c9c7ba; }
+
+  .xp-input {
+    font: 11px var(--xp-font);
+    color: #000;
+    background: #fff;
+    border: 1px solid var(--xp-input-border);
+    padding: 3px 4px;
+    border-radius: 0;
+  }
+  .xp-input:focus { outline: 1px solid var(--xp-select); outline-offset: -1px; }
+  .xp-input[aria-invalid="true"] { border-color: #c4271c; }
+
+  .xp-groupbox {
+    border: 1px solid #d0d0bf;
+    border-radius: 4px;
+    padding: 6px 10px 10px;
+  }
+  .xp-groupbox > legend { color: #0046d5; padding: 0 3px; }
+
+  .xp-link { color: var(--xp-link); cursor: pointer; }
+  .xp-link:hover { color: var(--xp-link-hover); text-decoration: underline; }
+
+  /* ─── Tabs (System Properties) ─── */
+  .xp-tablist { display: flex; flex-wrap: wrap; padding-left: 3px; margin-bottom: -1px; position: relative; z-index: 2; }
+  .xp-tab {
+    font: 11px var(--xp-font);
+    padding: 3px 8px 2px;
+    margin-right: -1px;
+    border: 1px solid #919b9c;
+    border-bottom: 0;
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(180deg, #fff, #fafaf9 26%, #f0f0ea 95%, #ecebe5);
+  }
+  .xp-tab:hover { border-top-color: #e68b2c; box-shadow: inset 0 2px #ffc73c; }
+  .xp-tab[aria-selected="true"] {
+    position: relative;
+    margin-top: -2px;
+    padding-bottom: 5px;
+    background: #fcfcfe;
+    border-top-color: #e68b2c;
+    box-shadow: inset 0 2px #ffc73c;
+  }
+  .xp-tabpanel {
+    position: relative;
+    z-index: 1;
+    border: 1px solid #919b9c;
+    background: linear-gradient(180deg, #fcfcfe, #f4f3ee);
+    box-shadow: 1px 2px 2px rgba(208, 206, 191, 0.75);
+  }
+
+  /* ─── Menus, toolbars and status bars ─── */
+  .xp-menubar {
+    display: flex;
+    font: 11px var(--xp-font);
+    background: var(--xp-face);
+    border-bottom: 1px solid #d8d2bd;
+    padding: 1px 2px;
+  }
+  .xp-menubar > span { padding: 2px 6px; color: #000; }
+
+  .xp-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 4px;
+    background: linear-gradient(180deg, #fbfbf9, #ece9d8);
+    border-bottom: 1px solid #d8d2bd;
+  }
+  .xp-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 36px;
+    padding: 0 6px;
+    font: 11px var(--xp-font);
+    color: #000;
+    border: 1px solid transparent;
+    border-radius: 3px;
+  }
+  .xp-tool:not(:disabled):hover { border-color: #cecec3; background: linear-gradient(180deg, #fff, #f0efea); }
+  .xp-tool:not(:disabled):active { background: #e3e2da; }
+  .xp-tool:disabled { opacity: 0.45; }
+  .xp-tool-sep { width: 1px; align-self: stretch; margin: 4px 3px; background: #c5c2b2; box-shadow: 1px 0 #fff; }
+
+  .xp-addressbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    font: 11px var(--xp-font);
+    background: var(--xp-face);
+    border-bottom: 1px solid #d8d2bd;
+  }
+
+  .xp-statusbar {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    font: 11px var(--xp-font);
+    background: var(--xp-face);
+    border-top: 1px solid #fff;
+  }
+  .xp-statusbar > * {
+    padding: 1px 5px;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #aca899;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ─── Explorer task pane ─── */
+  .xp-taskpane {
+    background: linear-gradient(180deg, #7ba2e7, #6375d6);
+    padding: 12px 10px;
+    font: 11px var(--xp-font);
+  }
+  .xp-taskpanel + .xp-taskpanel { margin-top: 12px; }
+  .xp-taskpanel-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 25px;
+    padding: 0 4px 0 11px;
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(90deg, #fff, #c6d3f7);
+    color: #215dc6;
+    font-weight: 700;
+    text-align: left;
+  }
+  .xp-taskpanel-head:hover { color: #428eff; }
+  .xp-taskpanel-chevron {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    border: 1px solid #b6c6ee;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  }
+  /* Collapses with a grid-rows transition, so nothing needs measuring */
+  .xp-taskpanel-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; }
+  .xp-taskpanel-body[data-open="false"] { grid-template-rows: 0fr; }
+  .xp-taskpanel-body > div { overflow: hidden; }
+  .xp-taskpanel-inner {
+    padding: 8px 10px 10px;
+    background: #d6dff7;
+    border: 1px solid #fff;
+    border-top: 0;
+    color: #000;
+  }
+
+  /* ─── Taskbar ─── */
+  .xp-taskbar {
+    background: linear-gradient(180deg, #1f2f86 0, #3165c4 3%, #3682e5 6%, #4490e6 10%, #3883e5 12%, #2b71e0 15%, #2663da 18%, #235bd6 20%, #2258d5 23%, #2157d6 38%, #245ddb 54%, #2562df 86%, #245fdc 89%, #2158d4 92%, #1d4ec0 95%, #1941a5 98%);
+  }
+  .xp-start-btn {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 20px 0 9px;
+    border-radius: 0 12px 12px 0;
+    color: #fff;
+    font: italic 700 18px/1 "Franklin Gothic Medium", "Trebuchet MS", Tahoma, sans-serif;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.55);
+    background: linear-gradient(180deg, #3c9f3c 0%, #62b862 6%, #3ca03c 14%, #329b32 50%, #2d942d 86%, #1f781f 100%);
+    box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.3), inset 0 2px 2px rgba(255, 255, 255, 0.35), 2px 0 3px rgba(0, 0, 0, 0.35);
+  }
+  .xp-start-btn:hover { filter: brightness(1.1); }
+  .xp-start-btn[aria-expanded="true"] { filter: brightness(0.85); }
+
+  .xp-taskbtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 3px;
+    color: #fff;
+    font: 11px var(--xp-font);
+    text-align: left;
+    background-color: #3c81f3;
+    box-shadow: inset -1px 0 rgba(0, 0, 0, 0.3), inset 1px 1px 1px rgba(255, 255, 255, 0.25);
+  }
+  .xp-taskbtn:hover { background-color: #53a3ff; }
+  .xp-taskbtn[aria-pressed="true"] {
+    background-color: #1e52b7;
+    box-shadow: inset 0 0 1px 1px rgba(0, 0, 0, 0.3), inset 1px 0 1px rgba(0, 0, 0, 0.7);
+    font-weight: 700;
+  }
+  .xp-quicklaunch-btn { padding: 3px; border-radius: 3px; }
+  .xp-quicklaunch-btn:hover { background: rgba(255, 255, 255, 0.18); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35); }
+
+  .xp-systray {
+    background: linear-gradient(180deg, #0c59b9 1%, #139ee9 6%, #18b5f2 10%, #139beb 14%, #1290e8 19%, #0d8dea 63%, #0d9ff1 81%, #0f9eed 88%, #119be9 91%, #1392e2 94%, #137ed7 97%, #095bc9 100%);
+    border-left: 1px solid #1042af;
+    box-shadow: inset 1px 0 1px #18bbff;
+  }
+  .xp-taskbar-apps { scrollbar-width: none; }
+  .xp-taskbar-apps::-webkit-scrollbar { display: none; }
+
+  /* ─── Start menu ─── */
+  .xp-startmenu {
+    border-radius: 7px 7px 0 0;
+    overflow: hidden;
+    background: #4282d6;
+    box-shadow: inset 0 0 0 1px #72ade9, 2px 3px 6px rgba(0, 0, 0, 0.5);
+    /* Short screens (landscape phones): scroll instead of running off the top */
+    max-height: calc(100% - 30px);
+    overflow-y: auto;
+  }
+  .xp-startmenu-header {
+    position: relative;
+    background: linear-gradient(180deg, #1868ce 0%, #0e60cb 12%, #0e60cb 20%, #1164cf 32%, #1667cf 33%, #1b6cd3 47%, #1e70d9 54%, #2476dc 60%, #297ae0 65%, #3482e3 77%, #3786e5 79%, #428ee9 90%, #4791eb 100%);
+  }
+  .xp-startmenu-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #da884a 50%, transparent);
+  }
+  .xp-startmenu-right { background: #cbe3ff; border-left: 1px solid rgba(58, 58, 255, 0.37); }
+  .xp-startmenu-footer {
+    background: linear-gradient(180deg, #4282d6 0%, #3b85e0 3%, #418ae3 5%, #418ae3 17%, #3c87e2 21%, #3786e4 26%, #3482e3 29%, #2e7ee1 39%, #2374df 49%, #2072db 57%, #196edb 62%, #176bd8 72%, #1468d5 75%, #1165d3 83%, #0f61cb 88%);
+  }
+  .xp-start-item:hover,
+  .xp-start-item:focus-visible { background: #2f71cd; color: #fff; outline: none; }
+  .xp-start-item:hover .xp-start-desc,
+  .xp-start-item:focus-visible .xp-start-desc { color: rgba(255, 255, 255, 0.85); }
+  .xp-start-sep { height: 1px; margin: 4px 8px; background: linear-gradient(90deg, transparent, #b0c4e8 20%, #b0c4e8 80%, transparent); }
+
+  /* ─── Context menus ─── */
+  .xp-menu {
+    min-width: 190px;
+    padding: 2px;
+    background: #fff;
+    border: 1px solid #aca899;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.35);
+    font: 11px var(--xp-font);
+    color: #000;
+  }
+  .xp-menu-item { width: 100%; display: flex; align-items: center; gap: 8px; padding: 3px 18px 3px 8px; text-align: left; }
+  .xp-menu-item:hover,
+  .xp-menu-item:focus-visible { background: var(--xp-select); color: #fff; outline: none; }
+  .xp-menu-item:disabled { color: #aca899; background: transparent; }
+  @media (pointer: coarse) {
+    .xp-menu-item { padding-top: 8px; padding-bottom: 8px; }
+  }
+  .xp-menu-sep { height: 1px; margin: 3px 1px; background: #aca899; }
+
+  /* ─── Balloon tip ─── */
+  .xp-balloon {
+    background: #ffffe1;
+    border: 1px solid #000;
+    border-radius: 7px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.35);
+    color: #000;
+    font: 11px var(--xp-font);
+    animation: balloonIn 0.25s ease-out both;
+  }
+  .xp-balloon::after,
+  .xp-balloon::before {
+    content: "";
+    position: absolute;
+    right: 38px;
+    border-style: solid;
+  }
+  .xp-balloon::before { bottom: -16px; border-width: 16px 0 0 16px; border-color: #000 transparent transparent; }
+  .xp-balloon::after { bottom: -14px; right: 39px; border-width: 14px 0 0 14px; border-color: #ffffe1 transparent transparent; }
+
+  /* ─── Desktop icons ─── */
+  .xp-icon-label { text-shadow: 1px 1px 1px #000, 0 0 3px rgba(0, 0, 0, 0.6); }
+  .xp-icon:focus-visible { outline: none; }
+  .xp-icon:focus-visible .xp-icon-label { outline: 1px dotted #fff; }
+
+  /* ─── Minesweeper cells press in (only cells, not every button) ─── */
+  .ms-cell:active:not(:disabled) { transform: scale(0.96); }
+}
+
+/* ─── Touch screens ───
+   XP's controls are sized for a mouse. On phones and tablets they grow to
+   finger size, and text fields use 16px so iOS Safari doesn't zoom in when
+   one is tapped. Unlayered on purpose, so it wins over Tailwind utilities. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+  .xp-input,
+  .xp-window select {
+    min-height: 36px;
+  }
+  .xp-button {
+    min-height: 36px;
+    padding: 0 16px;
+  }
+  .xp-tab {
+    min-height: 34px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  button.xp-link,
+  a.xp-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    min-width: 32px;
+  }
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ─── Luna scrollbars inside windows ───
+   Chrome ignores ::-webkit-scrollbar when scrollbar-color is set, so the
+   standard property is only used where the webkit selectors don't exist */
+@supports not selector(::-webkit-scrollbar) {
+  .xp-window * { scrollbar-color: #b9cdf9 #f4f4f0; }
+}
+.xp-window ::-webkit-scrollbar { width: 17px; height: 17px; }
+.xp-window ::-webkit-scrollbar-track { background: #f4f4f0; }
+.xp-window ::-webkit-scrollbar-thumb {
+  border: 1px solid #fff;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #c8d6fb, #b9cdf9);
+  box-shadow: inset -1px -1px #97aee2, inset 1px 1px #eef3fe;
+}
+.xp-window ::-webkit-scrollbar-thumb:horizontal { background: linear-gradient(180deg, #c8d6fb, #b9cdf9); }
+.xp-window ::-webkit-scrollbar-corner { background: var(--xp-face); }
