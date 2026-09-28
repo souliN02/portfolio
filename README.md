@@ -60,16 +60,18 @@ A few decisions worth knowing about:
 
 ## Running it
 
+The project uses [pnpm](https://pnpm.io). With Node.js 22+, `corepack enable` sets up the pinned version.
+
 ```bash
-npm install
-npm run dev          # http://localhost:3000
+pnpm install
+pnpm dev             # http://localhost:3000
 ```
 
 ```bash
-npm run lint
-npm run typecheck
-npm test
-npm run build
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
 CI runs all four on every push and pull request.

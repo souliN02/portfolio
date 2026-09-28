@@ -33,7 +33,7 @@ export const BIN_ITEMS: BinItem[] = [
     from: "C:\\Projects\\portfolio",
     deleted: "9/25/2026 9:03 AM",
     size: "2.4 GB",
-    note: "Restoring this would fill most of your disk. Try npm install instead.",
+    note: "Restoring this would fill most of your disk. Try pnpm install instead.",
   },
   {
     name: "tabs-vs-spaces.txt",
