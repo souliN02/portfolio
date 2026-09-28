@@ -19,7 +19,7 @@ const PINNED: { id: AppId; name: string; desc: string }[] = [
   { id: "ie", name: "Internet", desc: "Internet Explorer" },
   { id: "contact", name: "E-mail", desc: "Outlook Express" },
 ];
-const PROGRAMS: AppId[] = ["projects", "about", "cv", "terminal", "notepad", "minesweeper"];
+const PROGRAMS: AppId[] = ["projects", "about", "cv", "terminal", "notepad", "games"];
 
 export default function StartMenu({ onOpen, onClose, onLogOff, onTurnOff }: StartMenuProps) {
   const ref = useRef<HTMLDivElement>(null);

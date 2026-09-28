@@ -439,6 +439,39 @@ body {
 
   /* ─── Minesweeper cells press in (only cells, not every button) ─── */
   .ms-cell:active:not(:disabled) { transform: scale(0.96); }
+
+  /* ─── Game menu bars (these menus work, unlike Explorer's) ─── */
+  .xp-menubar-btn { padding: 2px 6px; color: #000; }
+  .xp-menubar-btn:hover,
+  .xp-menubar-btn:focus-visible,
+  .xp-menubar-btn-open { background: var(--xp-select); color: #fff; outline: none; }
+  .xp-menubar-btn:disabled { color: #aca899; background: transparent; }
+
+  /* ─── Card games ─── */
+  .xp-felt { background: radial-gradient(ellipse at 50% 40%, #0a8a0a, #006e00 85%); touch-action: pan-y; }
+  .card-face {
+    background: #fff;
+    border: 1px solid #4a4a4a;
+    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+  }
+  .card-back {
+    border: 1px solid #1d2f63;
+    background-color: #2458c8;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.22) 0 1.5px, transparent 1.5px 6px),
+      repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.22) 0 1.5px, transparent 1.5px 6px);
+    box-shadow: inset 0 0 0 2px #fff, 1px 1px 0 rgba(0, 0, 0, 0.18);
+  }
+  .card-court { border: 1px solid #c9a13b; background: linear-gradient(180deg, #fff8dc, #f3e2a8); }
+  .card-slot { border: 1px solid rgba(0, 0, 0, 0.35); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.45); }
+  .card-shake { animation: cardShake 0.3s ease; }
+}
+
+@keyframes cardShake {
+  0%, 100% { translate: 0 0; }
+  25% { translate: -4px 0; }
+  75% { translate: 4px 0; }
 }
 
 /* ─── Touch screens ───
@@ -474,6 +507,10 @@ body {
   input[type="checkbox"] {
     width: 20px;
     height: 20px;
+  }
+  .xp-menubar-btn {
+    min-height: 32px;
+    padding: 0 12px;
   }
 }
 

@@ -32,14 +32,19 @@ const OutlookCompose = dynamic(() => import("@/components/windows/OutlookCompose
 const InternetExplorer = dynamic(() => import("@/components/windows/InternetExplorer"), { ssr: false, loading });
 const Terminal = dynamic(() => import("@/components/windows/Terminal"), { ssr: false, loading });
 const Minesweeper = dynamic(() => import("@/components/windows/Minesweeper"), { ssr: false, loading });
+const GamesFolder = dynamic(() => import("@/components/windows/GamesFolder"), { ssr: false, loading });
+const Solitaire = dynamic(() => import("@/components/windows/Solitaire"), { ssr: false, loading });
+const SpiderSolitaire = dynamic(() => import("@/components/windows/SpiderSolitaire"), { ssr: false, loading });
+const FreeCell = dynamic(() => import("@/components/windows/FreeCell"), { ssr: false, loading });
+const Hearts = dynamic(() => import("@/components/windows/Hearts"), { ssr: false, loading });
 const RecycleBin = dynamic(() => import("@/components/windows/RecycleBin"), { ssr: false, loading });
 const Screensaver = dynamic(() => import("@/components/screens/Screensaver"), { ssr: false });
 
 type Phase = "init" | "boot" | "welcome" | "desktop" | "off";
 
 const SESSION_KEY = "xp_session";
-const ICONS_KEY = "xp_icon_positions_v5";
-const OLD_ICON_KEYS = ["xp_icon_positions", "xp_icon_positions_v2", "xp_icon_positions_v3", "xp_icon_positions_v4"];
+const ICONS_KEY = "xp_icon_positions_v6";
+const OLD_ICON_KEYS = ["xp_icon_positions", "xp_icon_positions_v2", "xp_icon_positions_v3", "xp_icon_positions_v4", "xp_icon_positions_v5"];
 const IDLE_MS = 3 * 60 * 1000;
 
 function WindowContent({ win }: { win: WinState }) {
@@ -58,8 +63,18 @@ function WindowContent({ win }: { win: WinState }) {
       return <Terminal />;
     case "notepad":
       return <Notepad />;
+    case "games":
+      return <GamesFolder />;
     case "minesweeper":
       return <Minesweeper />;
+    case "solitaire":
+      return <Solitaire />;
+    case "spider":
+      return <SpiderSolitaire />;
+    case "freecell":
+      return <FreeCell />;
+    case "hearts":
+      return <Hearts />;
     case "recycle":
       return <RecycleBin />;
   }
@@ -194,9 +209,14 @@ export default function Desktop() {
     setBinEmpty(true);
   }, []);
 
+  // Read through a ref, so windows moving around doesn't re-render everything that uses the API
+  const windowsRef = useRef(wm.windows);
+  windowsRef.current = wm.windows;
+  const getOpenApps = useCallback(() => windowsRef.current.map((w) => w.id), []);
+
   const api = useMemo<DesktopApi>(
-    () => ({ openApp, closeApp, setTitle, requestTurnOff, binEmpty, emptyBin, touch }),
-    [openApp, closeApp, setTitle, requestTurnOff, binEmpty, emptyBin, touch],
+    () => ({ openApp, closeApp, setTitle, requestTurnOff, getOpenApps, binEmpty, emptyBin, touch }),
+    [openApp, closeApp, setTitle, requestTurnOff, getOpenApps, binEmpty, emptyBin, touch],
   );
 
   /* ─── Session: log on, log off, shut down ─── */

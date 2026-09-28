@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { COLS, MINES, ROWS, clickCell, countFlags, createEmptyBoard, toggleFlag, type Board, type GameState } from "@/lib/minesweeper";
+import { recordStart, recordWin } from "@/lib/gameStats";
 
 const NUM_COLORS: Record<number, string> = {
   1: "#0000FF",
@@ -42,6 +43,8 @@ export default function Minesweeper() {
   const reveal = (r: number, c: number) => {
     if (flagMode) return flag(r, c);
     const result = clickCell(board, game, r, c);
+    if (game === "ready" && result.state !== "ready") recordStart("minesweeper");
+    if (result.state === "won" && game !== "won") recordWin("minesweeper", time);
     setBoard(result.board);
     setGame(result.state);
   };

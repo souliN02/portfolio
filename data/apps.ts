@@ -6,7 +6,12 @@ export const APP_IDS = [
   "ie",
   "terminal",
   "notepad",
+  "games",
   "minesweeper",
+  "solitaire",
+  "spider",
+  "freecell",
+  "hearts",
   "recycle",
 ] as const;
 
@@ -38,14 +43,22 @@ export const APPS: Record<AppId, AppMeta> = {
   ie: { title: "Internet Explorer", label: "Internet Explorer", desc: "Browse my live projects", icon: EXTRA("ie"), w: 940, h: 640 },
   terminal: { title: "Command Prompt", label: "Terminal", desc: "Command line", icon: EXTRA("cmd"), w: 680, h: 440 },
   notepad: { title: "readme.txt - Notepad", label: "readme.txt", desc: "Welcome note", icon: XP("List File"), w: 560, h: 460 },
-  minesweeper: { title: "Minesweeper", label: "Minesweeper", desc: "Take a break", icon: XP("Minesweeper"), w: 320, h: 440, resizable: false, maximizable: false },
+  games: { title: "Games", label: "Games", desc: "Solitaire, FreeCell and more", icon: XP("Game Controller"), w: 560, h: 420 },
+  minesweeper: { title: "Minesweeper", label: "Minesweeper", desc: "Find the mines", icon: XP("Minesweeper"), w: 320, h: 440, resizable: false, maximizable: false },
+  solitaire: { title: "Solitaire", label: "Solitaire", desc: "The classic card game", icon: EXTRA("solitaire"), w: 640, h: 540 },
+  spider: { title: "Spider Solitaire", label: "Spider Solitaire", desc: "Two decks, ten piles", icon: EXTRA("spider"), w: 780, h: 580 },
+  freecell: { title: "FreeCell", label: "FreeCell", desc: "Every deal numbered", icon: XP("Freecell"), w: 640, h: 540 },
+  hearts: { title: "Hearts", label: "Hearts", desc: "Avoid the Queen of Spades", icon: XP("Hearts"), w: 640, h: 580 },
   recycle: { title: "Recycle Bin", label: "Recycle Bin", desc: "Deleted items", icon: EXTRA("recycle-full"), w: 680, h: 440 },
 };
 
 export const RECYCLE_EMPTY_ICON = EXTRA("recycle-empty");
 
+/** Everything in the Games folder, in the order XP's Games menu listed them */
+export const GAMES = ["freecell", "hearts", "minesweeper", "solitaire", "spider"] as const satisfies readonly AppId[];
+
 /** Icons in the desktop's left-hand column(s), top to bottom */
-export const DESKTOP_ICONS: AppId[] = ["projects", "about", "cv", "contact", "ie", "terminal", "notepad", "minesweeper"];
+export const DESKTOP_ICONS: AppId[] = ["projects", "about", "cv", "contact", "ie", "terminal", "notepad", "games"];
 
 /** Recycle Bin sits in the bottom-right corner, as on a real XP desktop */
 export const CORNER_ICON: AppId = "recycle";
@@ -81,8 +94,19 @@ export const APP_ALIASES: Record<string, AppId> = {
   cmd: "terminal",
   notepad: "notepad",
   readme: "notepad",
+  games: "games",
+  game: "games",
   minesweeper: "minesweeper",
+  mines: "minesweeper",
   winmine: "minesweeper",
+  solitaire: "solitaire",
+  sol: "solitaire",
+  klondike: "solitaire",
+  spider: "spider",
+  spidersolitaire: "spider",
+  freecell: "freecell",
+  hearts: "hearts",
+  mshearts: "hearts",
   recycle: "recycle",
   bin: "recycle",
   trash: "recycle",

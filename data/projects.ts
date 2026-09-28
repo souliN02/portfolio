@@ -192,7 +192,7 @@ export const PROJECTS: Project[] = [
       "This site. A portfolio styled as a Windows XP desktop, built solo to show personality and frontend craft. Visitors can explore my work, run my live demos in Internet Explorer, or send me an e-mail from Outlook Express.",
     details: [
       "Window manager written as a pure, unit-tested reducer: z-order stacking, focus, minimize and maximize, and clamping so no window can be lost off screen.",
-      "Boot and Welcome screens, Explorer, System Properties, Outlook Express, Internet Explorer, Command Prompt, Minesweeper, Recycle Bin, and a screensaver.",
+      "Boot and Welcome screens, Explorer, System Properties, Outlook Express, Internet Explorer, Command Prompt, Recycle Bin, a screensaver, and XP's games: Solitaire, Spider Solitaire, FreeCell, Hearts and Minesweeper, all playable by touch.",
       "Outlook Express delivers messages to my inbox through a Next.js route handler and Resend, with validation shared between client and server, a honeypot, and rate limiting.",
       "Works on phones: windows open full-screen, taps replace double-clicks, and long-press replaces right-click. Deep links open any window directly.",
       "Strict TypeScript, Vitest tests, and CI (lint, typecheck, test, build) on every push.",
