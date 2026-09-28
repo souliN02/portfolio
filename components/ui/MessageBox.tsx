@@ -15,12 +15,14 @@ interface MessageBoxProps {
   children: ReactNode;
   buttons: MessageBoxButton[];
   onClose: () => void;
+  /** Off when the message holds a text field that should get focus instead */
+  focusButton?: boolean;
 }
 
 const ICONS = { info: InfoIcon, warning: WarningIcon, error: ErrorIcon, question: QuestionIcon };
 
 /** An XP message box, shown modally over the window it belongs to */
-export default function MessageBox({ title, icon = "info", children, buttons, onClose }: MessageBoxProps) {
+export default function MessageBox({ title, icon = "info", children, buttons, onClose, focusButton = true }: MessageBoxProps) {
   const titleId = useId();
   const firstButton = useRef<HTMLButtonElement>(null);
   const Icon = ICONS[icon];
@@ -28,8 +30,8 @@ export default function MessageBox({ title, icon = "info", children, buttons, on
   useEffect(() => {
     if (icon === "warning" || icon === "error") sounds.error();
     else sounds.notify();
-    firstButton.current?.focus();
-  }, [icon]);
+    if (focusButton) firstButton.current?.focus();
+  }, [icon, focusButton]);
 
   return (
     <div

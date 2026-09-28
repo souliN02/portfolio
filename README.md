@@ -14,8 +14,9 @@ My portfolio, built as a Windows XP desktop you can actually use. Double-click t
 | **About Me** (System Properties) | Bio, skills, experience and education as dialog tabs |
 | **Contact** (Outlook Express) | A real contact form sent through Resend, falling back to the visitor's mail app |
 | **Internet Explorer** | Runs my live projects (LineDrift, Risk) inside the desktop |
-| **Terminal** (Command Prompt) | `help`, `projects`, `open linedrift`, `msg hi bekir!`, tab completion and history |
-| **Bekir's CV**, **readme.txt**, **Minesweeper**, **Recycle Bin** | The rest of a proper desktop |
+| **Terminal** (Command Prompt) | `help`, `projects`, `open linedrift`, `msg hi bekir!`, `tasklist`/`taskkill`, `git log`, `calc`, tab completion and history. On phones it wraps to the screen, commands in the output can be tapped, and a quick-key bar stands in for Tab and the arrow keys |
+| **Games** | XP's games folder: Solitaire (with the bouncing-cards win), Spider Solitaire (1, 2 or 4 suits), FreeCell (Microsoft's numbered deals, so game #1 is XP's game #1), Hearts against three computer players, and Minesweeper. Drag cards or tap to move them, with undo and saved statistics |
+| **Bekir's CV**, **readme.txt**, **Recycle Bin** | The rest of a proper desktop |
 
 Plus a boot screen, the XP Welcome screen, Start menu, taskbar with Quick Launch, a working volume control, balloon tips, Turn Off and Log Off dialogs, and a Mystify screensaver.
 
@@ -42,9 +43,12 @@ components/
   desktop/      shell: Desktop, XpWindow, DesktopIcons, Taskbar, StartMenu, dialogs
   screens/      boot, Welcome, "safe to turn off", screensaver
   windows/      one component per application
+  games/        the card table, cards, and game window chrome shared by the card games
 data/           the single source of truth for all copy: profile, projects, apps
-lib/            pure logic, unit tested: window manager, terminal, minesweeper,
-                deep links, contact validation, mail, rate limiting
+lib/            pure logic, unit tested: window manager, terminal, calculator,
+                minesweeper, solitaire, spider, freecell, hearts (with its
+                computer players), deep links, contact validation, mail,
+                rate limiting
 ```
 
 A few decisions worth knowing about:
@@ -56,16 +60,18 @@ A few decisions worth knowing about:
 
 ## Running it
 
+The project uses [pnpm](https://pnpm.io). With Node.js 22+, `corepack enable` sets up the pinned version.
+
 ```bash
-npm install
-npm run dev          # http://localhost:3000
+pnpm install
+pnpm dev             # http://localhost:3000
 ```
 
 ```bash
-npm run lint
-npm run typecheck
-npm test
-npm run build
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
 CI runs all four on every push and pull request.

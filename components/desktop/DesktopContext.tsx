@@ -11,6 +11,8 @@ export interface DesktopApi {
   /** Override a window's title bar and taskbar text (Explorer shows the current folder, IE the page) */
   setTitle: (id: AppId, title: string | null) => void;
   requestTurnOff: () => void;
+  /** Apps with an open window, oldest first (the terminal's tasklist) */
+  getOpenApps: () => AppId[];
   binEmpty: boolean;
   emptyBin: () => void;
   /** Coarse pointer: taps instead of double-clicks, long-press instead of right-click */
