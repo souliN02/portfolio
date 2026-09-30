@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, type ComponentType, type KeyboardEvent } from "react";
 import { FileText, Globe, Link as LinkIcon, LogOut, Power, Star } from "lucide-react";
-import { APPS, type AppId } from "@/data/apps";
-import { PROFILE } from "@/data/profile";
+import { appsFor, type AppId } from "@/data/apps";
+import { PROFILE, profileFor } from "@/data/profile";
 import { FLAGSHIP, primaryLink } from "@/data/projects";
+import { useLang, useStrings } from "@/lib/language";
 import { GitHubMark } from "@/components/ui/glyphs";
 
 interface StartMenuProps {
@@ -15,14 +16,17 @@ interface StartMenuProps {
 }
 
 /* Pinned at the top, as XP pinned Internet and E-mail */
-const PINNED: { id: AppId; name: string; desc: string }[] = [
-  { id: "ie", name: "Internet", desc: "Internet Explorer" },
-  { id: "contact", name: "E-mail", desc: "Outlook Express" },
+const PINNED: { id: AppId; name: "internet" | "email"; desc: string }[] = [
+  { id: "ie", name: "internet", desc: "Internet Explorer" },
+  { id: "contact", name: "email", desc: "Outlook Express" },
 ];
 const PROGRAMS: AppId[] = ["projects", "about", "cv", "terminal", "notepad", "games"];
 
 export default function StartMenu({ onOpen, onClose, onLogOff, onTurnOff }: StartMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const lang = useLang();
+  const t = useStrings().start;
+  const apps = appsFor(lang);
   const flagshipLink = primaryLink(FLAGSHIP);
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export default function StartMenu({ onOpen, onClose, onLogOff, onTurnOff }: Star
   return (
     <>
       <div className="fixed inset-0 z-40" onPointerDown={onClose} aria-hidden="true" />
-      <div ref={ref} role="menu" aria-label="Start menu" className="xp-startmenu animate-startOpen absolute bottom-[30px] left-0 z-50 w-[380px] max-w-full text-black" onKeyDown={onKeyDown}>
+      <div ref={ref} role="menu" aria-label={t.menu} className="xp-startmenu animate-startOpen absolute bottom-[30px] left-0 z-50 w-[380px] max-w-full text-black" onKeyDown={onKeyDown}>
         <div className="xp-startmenu-header flex items-center gap-2 px-2 pb-2.5 pt-2 text-white">
           <span className="grid h-[42px] w-[42px] place-items-center rounded-[3px] border-2 border-white/80 bg-gradient-to-br from-[#fff] to-[#cfe0fb] shadow">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -49,18 +53,18 @@ export default function StartMenu({ onOpen, onClose, onLogOff, onTurnOff }: Star
           </span>
           <div className="leading-tight [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">
             <p className="text-[14px] font-bold">{PROFILE.name}</p>
-            <p className="text-[10px] text-white/85">{PROFILE.role}</p>
+            <p className="text-[10px] text-white/85">{profileFor(lang).role}</p>
           </div>
         </div>
 
         <div className="flex">
           <div className="w-[56%] bg-white py-1.5">
             {PINNED.map((p) => (
-              <Item key={p.id} icon={APPS[p.id].icon} name={p.name} desc={p.desc} bold onClick={() => onOpen(p.id)} />
+              <Item key={p.id} icon={apps[p.id].icon} name={t[p.name]} desc={p.desc} bold onClick={() => onOpen(p.id)} />
             ))}
             <div className="xp-start-sep" />
             {PROGRAMS.map((id) => (
-              <Item key={id} icon={APPS[id].icon} name={APPS[id].label} desc={APPS[id].desc} onClick={() => onOpen(id)} />
+              <Item key={id} icon={apps[id].icon} name={apps[id].label} desc={apps[id].desc} onClick={() => onOpen(id)} />
             ))}
           </div>
           <div className="xp-startmenu-right w-[44%] py-1.5">
@@ -76,26 +80,26 @@ export default function StartMenu({ onOpen, onClose, onLogOff, onTurnOff }: Star
               </LinkItem>
             )}
             <LinkItem icon={FileText} href={PROFILE.cvPath}>
-              CV (PDF)
+              {t.cv}
             </LinkItem>
             <div className="xp-start-sep" />
             <button type="button" className="xp-start-item flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-[11px] font-bold text-[#0a246a]" onClick={() => onOpen("recycle")}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={APPS.recycle.icon} alt="" width={20} height={20} />
-              Recycle Bin
+              <img src={apps.recycle.icon} alt="" width={20} height={20} />
+              {apps.recycle.label}
             </button>
             <LinkItem icon={Globe} href="/simple" newTab={false}>
-              Plain text version
+              {t.plainText}
             </LinkItem>
           </div>
         </div>
 
         <div className="xp-startmenu-footer flex items-center justify-end gap-1 px-2 py-1.5 text-[11px] text-white">
           <FooterButton onClick={onLogOff} tone="orange" icon={LogOut}>
-            Log Off
+            {t.logOff}
           </FooterButton>
           <FooterButton onClick={onTurnOff} tone="red" icon={Power}>
-            Turn Off Computer
+            {t.turnOff}
           </FooterButton>
         </div>
       </div>

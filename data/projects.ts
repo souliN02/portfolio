@@ -1,3 +1,5 @@
+import { localizePeriod, type Lang } from "@/lib/i18n";
+
 export type ProjectGroupId = "professional" | "building" | "personal";
 
 export interface ProjectLink {
@@ -22,6 +24,7 @@ export interface Project {
   icon: string;
   /** One line for tiles, the terminal, and link previews */
   tagline: string;
+  /** Explorer shows a Flagship badge first on its own, from `flagship` */
   badges: string[];
   summary: string;
   details: string[];
@@ -33,12 +36,26 @@ export interface Project {
   /** Live URL that allows being framed, so it can open inside Internet Explorer */
   frameUrl?: string;
   flagship?: boolean;
+  /** The Danish wording, for the language bar. Keep it in step with the English (lib/i18n.test.ts checks) */
+  da: ProjectCopy;
 }
 
-export const PROJECT_GROUPS: { id: ProjectGroupId; label: string }[] = [
-  { id: "professional", label: "Fleeca, formerly CreativeGround (Professional)" },
-  { id: "building", label: "Currently building" },
-  { id: "personal", label: "Personal projects" },
+export interface ProjectCopy {
+  /** Only when the name itself translates */
+  title?: string;
+  status: string;
+  tagline: string;
+  badges: string[];
+  summary: string;
+  details: string[];
+  imageAlt?: string;
+  mediaAlts?: string[];
+}
+
+export const PROJECT_GROUPS: { id: ProjectGroupId; label: string; da: string }[] = [
+  { id: "professional", label: "Fleeca, formerly CreativeGround (Professional)", da: "Fleeca, tidligere CreativeGround (professionelt)" },
+  { id: "building", label: "Currently building", da: "Under udvikling lige nu" },
+  { id: "personal", label: "Personal projects", da: "Personlige projekter" },
 ];
 
 const ICON = (name: string) => `/xp-icons/${name}.ico`;
@@ -52,7 +69,7 @@ export const PROJECTS: Project[] = [
     status: "Production",
     icon: ICON("Manage your Server"),
     tagline: "Custom CRM built end to end, solo, AI-first",
-    badges: ["Flagship", "Production"],
+    badges: ["Production"],
     flagship: true,
     summary:
       "A custom CRM I built end to end, solo, at Fleeca (formerly CreativeGround). Shipped to production with Claude as my primary development partner.",
@@ -63,6 +80,18 @@ export const PROJECTS: Project[] = [
     ],
     tech: ["Next.js", "React", "TypeScript", "Tailwind CSS", "REST APIs"],
     links: [{ label: "nordeskcrm.com", href: "https://nordeskcrm.com", kind: "live" }],
+    da: {
+      status: "I produktion",
+      tagline: "Skræddersyet CRM bygget fra ende til anden, alene, AI-first",
+      badges: ["I produktion"],
+      summary:
+        "Et skræddersyet CRM, jeg byggede fra ende til anden, alene, hos Fleeca (tidligere CreativeGround). Sat i produktion med Claude som min primære udviklingspartner.",
+      details: [
+        "Ejede hele udviklingen: afgrænsning, UI, serverlogik og udrulning.",
+        "Komplekse UI-flows: formularer, tabeller, filtre og state management i frontend.",
+        "Et konkret eksempel på AI-assisteret udvikling, der leverer produktionssoftware, hvor jeg står inde for kvaliteten af det, der blev leveret.",
+      ],
+    },
   },
   {
     id: "cvr",
@@ -82,6 +111,19 @@ export const PROJECTS: Project[] = [
     ],
     tech: ["Python", "REST APIs", "Data normalization"],
     links: [],
+    da: {
+      title: "CVR-integrationsværktøj",
+      status: "I produktion",
+      tagline: "Python-integration, der fører CVR-data ind i Nordesk",
+      badges: ["I produktion", "Integration"],
+      summary:
+        "Et Python-værktøj bygget sammen med Nordesk, der integrerer CVR-registret og fører normaliserede virksomhedsdata ind i CRM'et til leadgenerering.",
+      details: [
+        "Indlæste og normaliserede virksomhedsdata på tværs af uensartede skemaer.",
+        "Håndterede rodede tredjepartsdata: fejlbehæftede svar, manglende felter og rate limits.",
+        "Automatiserede en tidligere manuel proces og sendte rene data videre ind i Nordesks arbejdsgange.",
+      ],
+    },
   },
   {
     id: "linedrift",
@@ -108,6 +150,21 @@ export const PROJECTS: Project[] = [
       { label: "Live demo", href: "https://linedrift.bekirsaliv.dk", kind: "live" },
       { label: "GitHub", href: "https://github.com/souliN02/linedrift", kind: "source" },
     ],
+    da: {
+      status: "Live",
+      tagline: "Odds-tracker til fodbold med en no-vig value-motor",
+      badges: ["Datapipeline", "Under udvikling", "Live"],
+      imageAlt: "Skærmbillede af LineDrift-dashboardet",
+      summary:
+        "En odds-tracker til fodbold, der opbygger sit eget historiske datasæt inden for en hård grænse på 500 gratis API-kreditter om måneden. Et planlagt job gemmer bookmakernes odds i Postgres hver 4. time, og rene, enhedstestede funktioner beregner derefter no-vig fair-sandsynligheder og markerer priser, der slår markedets konsensus i Premier League, Superligaen og VM 2026. Et læringsprojekt inden for analyse og data engineering, ikke et bettingprodukt.",
+      details: [
+        "En datapipeline drevet af begrænsninger, ikke en demo: gratis odds-API'er viser kun den aktuelle pris, så et planlagt GitHub Actions-job gemmer odds hver 4. time for at opbygge sin egen historik, alt sammen inden for et budget på 500 kreditter om måneden, som hver arkitekturbeslutning udspringer af.",
+        "No-vig value-motor skrevet test-first som rene funktioner: implicit sandsynlighed, overround (vig), no-vig fair-sandsynligheder, markedskonsensus på tværs af 3 eller flere bookmakere og value-markeringer ud fra afvigelsen fra konsensus.",
+        "Dataintegritet fra starten: odds gemmes som Postgres numeric (aldrig float) for at undgå afrundingsfejl, og Zod validerer alle svar fra eksterne API'er ved én enkelt grænse.",
+        "React Server Components læser direkte fra databasen, så klienten ikke henter data ved første visning, og GitHub Actions kører den planlagte indlæsning, fordi cron på Vercel Hobby er begrænset til én kørsel om dagen.",
+        "Bevis for, at det holder: strict TypeScript uden any, 111 tests, CI (lint, typecheck, test, build) grøn på hver PR og Lighthouse 94 til 100 på performance, tilgængelighed, best practices og SEO.",
+      ],
+    },
   },
   {
     id: "risk",
@@ -130,6 +187,18 @@ export const PROJECTS: Project[] = [
       { label: "Live demo", href: "https://risk-game-seven.vercel.app", kind: "live" },
       { label: "GitHub", href: "https://github.com/souliN02/risk-game", kind: "source" },
     ],
+    da: {
+      title: "Risk (multiplayer)",
+      status: "Live",
+      tagline: "Risk for flere spillere i realtid over Socket.IO",
+      badges: ["Under udvikling", "Live"],
+      summary: "Brætspillet Risk for flere spillere i realtid, med lobbyer, klassiske regler og et mørkt UI.",
+      details: [
+        "Gameplay i realtid over Socket.IO, hvor man kan oprette og deltage i lobbyer.",
+        "Klassiske Risk-regler med forstærknings-, angrebs- og befæstningsfaser.",
+        "Mørkt, fokuseret UI bygget til hurtige spil med flere spillere.",
+      ],
+    },
   },
   {
     id: "setsaga",
@@ -160,6 +229,20 @@ export const PROJECTS: Project[] = [
       { src: "/setsaga/charts.png", alt: "Progress charts" },
       { src: "/setsaga/achievements.png", alt: "Achievements and badges" },
     ],
+    da: {
+      status: "v0.1.0",
+      tagline: "Gamificeret træningslog, der virker offline (mobil)",
+      badges: ["Mobil", "Offline-first", "v0.1.0"],
+      summary:
+        "En gamificeret, offline-first træningslog til Android og iOS, bygget alene. Registrér sæt, gentagelser og vægt; appen gør vedholdenhed til XP, levels, streaks, badges og automatisk fundne personlige rekorder.",
+      details: [
+        "Local-first fra starten: alle data ligger i SQLite på telefonen. Ingen konti, ingen backend, ingen netværkskald. Databasemigreringer følger med appen og køres på enheden.",
+        "Gamification-motoren består af rene funktioner bygget test-first (211 tests), og al XP-, streak- og badge-tilstand udledes af træningsdata i stedet for at blive gemt, så den aldrig kan komme ud af sync.",
+        "Crash-sikker write-through-logning: hvert sæt gemmes i det øjeblik, det bekræftes, så intet går tabt, hvis appen lukkes midt i en træning.",
+        'Bygget AI-first med Claude Code i seks planlagte faser, én PR pr. fase og grøn CI ved hver merge. README\'en har et afsnit med "Engineering decisions", skrevet til tekniske reviewere.',
+      ],
+      mediaAlts: ["SetSaga-demo", "Startskærm med XP og level-fremskridt", "Skærm til registrering af træning", "Grafer over fremskridt", "Præstationer og badges"],
+    },
   },
   {
     id: "promptfuzz",
@@ -178,6 +261,17 @@ export const PROJECTS: Project[] = [
     ],
     tech: ["Python", "LLM APIs", "CLI"],
     links: [{ label: "GitHub", href: "https://github.com/souliN02/PromptFuzz-CLI", kind: "source" }],
+    da: {
+      status: "CLI",
+      tagline: "LLM red-team-fuzzer med 18 mutationsstrategier",
+      badges: ["Sikkerhed", "CLI"],
+      summary: "En LLM red-team-fuzzer med 18 mutationsstrategier til sikkerhedstest af prompts på tværs af flere udbydere.",
+      details: [
+        "18 mutationsstrategier til at afprøve LLM-guardrails.",
+        "Interaktiv menutilstand og understøttelse af flere udbydere.",
+        "Bygget til praktisk, autoriseret sikkerhedstest af LLM'er.",
+      ],
+    },
   },
   {
     id: "portfolio",
@@ -195,6 +289,7 @@ export const PROJECTS: Project[] = [
       "Boot and Welcome screens, Explorer, System Properties, Outlook Express, Internet Explorer, Command Prompt, Recycle Bin, a screensaver, and XP's games: Solitaire, Spider Solitaire, FreeCell, Hearts and Minesweeper, all playable by touch.",
       "Outlook Express delivers messages to my inbox through a Next.js route handler and Resend, with validation shared between client and server, a honeypot, and rate limiting.",
       "Works on phones: windows open full-screen, taps replace double-clicks, and long-press replaces right-click. Deep links open any window directly.",
+      "In English and Danish: the language bar in the tray switches, and first-time visitors get the language their browser asks for.",
       "Strict TypeScript, Vitest tests, and CI (lint, typecheck, test, build) on every push.",
     ],
     tech: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Resend", "Vitest", "GitHub Actions"],
@@ -202,6 +297,22 @@ export const PROJECTS: Project[] = [
       { label: "Live", href: "https://bekirsaliv.dk", kind: "live" },
       { label: "GitHub", href: "https://github.com/souliN02/portfolio", kind: "source" },
     ],
+    da: {
+      title: "Windows XP-portfolio",
+      status: "Live",
+      tagline: "Dette site: et Windows XP-skrivebord i browseren",
+      badges: ["Live", "TypeScript", "Testet"],
+      summary:
+        "Dette site. Et portfolio i form af et Windows XP-skrivebord, bygget alene for at vise personlighed og frontend-håndværk. Besøgende kan udforske mit arbejde, køre mine live-demoer i Internet Explorer eller sende mig en e-mail fra Outlook Express.",
+      details: [
+        "Vinduesstyring skrevet som en ren, enhedstestet reducer: z-rækkefølge, fokus, minimer og maksimer samt afgrænsning, så intet vindue kan forsvinde ud af skærmen.",
+        "Opstarts- og velkomstskærme, Stifinder, Systemegenskaber, Outlook Express, Internet Explorer, Kommandoprompt, Papirkurv, en pauseskærm og XP's spil: Solitaire, Spider Solitaire, FreeCell, Hearts og Minesweeper, som alle kan spilles med touch.",
+        "Outlook Express leverer beskeder til min indbakke via en route handler i Next.js og Resend, med validering delt mellem klient og server, en honeypot og rate limiting.",
+        "Virker på telefoner: vinduer åbner i fuld skærm, tryk erstatter dobbeltklik, og langt tryk erstatter højreklik. Deep links åbner ethvert vindue direkte.",
+        "På engelsk og dansk: sproglinjen i proceslinjen skifter sprog, og nye besøgende får det sprog, deres browser beder om.",
+        "Strict TypeScript, Vitest-tests og CI (lint, typecheck, test, build) ved hvert push.",
+      ],
+    },
   },
   {
     id: "jornada",
@@ -216,8 +327,43 @@ export const PROJECTS: Project[] = [
     details: ["Responsive landing page across desktop and mobile.", "Clear service sections with friendly, accessible navigation."],
     tech: ["Next.js", "React", "Tailwind CSS"],
     links: [],
+    da: {
+      status: "Arkiveret",
+      tagline: "Landingsside for en virksomhed, der underviser i engelsk",
+      badges: ["Arkiveret"],
+      summary: "En landingsside for Jornada Inglês Br, der præsenterer virksomhedens identitet, mission og ydelser.",
+      details: ["Responsiv landingsside på desktop og mobil.", "Tydelige sektioner om ydelserne med venlig, tilgængelig navigation."],
+    },
   },
 ];
+
+/** A project in the desktop's language. Ids, links and tech names stay as they are */
+export function localizeProject(p: Project, lang: Lang): Project {
+  if (lang === "en") return p;
+  const { da } = p;
+  return {
+    ...p,
+    title: da.title ?? p.title,
+    period: localizePeriod(p.period, lang),
+    status: da.status,
+    tagline: da.tagline,
+    badges: da.badges,
+    summary: da.summary,
+    details: da.details,
+    image: p.image && { ...p.image, alt: da.imageAlt ?? p.image.alt },
+    media: p.media?.map((m, i) => ({ ...m, alt: da.mediaAlts?.[i] ?? m.alt })),
+  };
+}
+
+const PROJECTS_DA = PROJECTS.map((p) => localizeProject(p, "da"));
+
+export function projectsFor(lang: Lang): Project[] {
+  return lang === "da" ? PROJECTS_DA : PROJECTS;
+}
+
+export function groupsFor(lang: Lang): { id: ProjectGroupId; label: string }[] {
+  return PROJECT_GROUPS.map((g) => ({ id: g.id, label: lang === "da" ? g.da : g.label }));
+}
 
 export function getProject(id: string): Project | undefined {
   return PROJECTS.find((p) => p.id === id);

@@ -1,5 +1,6 @@
 import { resolveApp, type AppId } from "@/data/apps";
 import { getProject } from "@/data/projects";
+import type { Lang } from "./i18n";
 
 /**
  * Deep links skip the boot and Welcome screens and open windows directly:
@@ -7,6 +8,7 @@ import { getProject } from "@/data/projects";
  *   /?open=about,contact                 several windows at once
  *   /?project=nordesk                    `project` alone implies Explorer
  *   /?open=contact                       Outlook Express, to e-mail Bekir
+ * A `lang=da` alongside any of these (or on its own) shows the desktop in Danish; see lib/i18n.ts.
  */
 
 export interface DeepLink {
@@ -29,10 +31,13 @@ export function parseDeepLink(search: string): DeepLink | null {
   return apps.length ? { apps, project } : null;
 }
 
-export function projectLink(origin: string, id: string): string {
-  return `${origin}/?open=projects&project=${encodeURIComponent(id)}`;
+/** Copied links carry the language along, so a Danish visitor shares the Danish desktop */
+const langParam = (lang: Lang) => (lang === "en" ? "" : `&lang=${lang}`);
+
+export function projectLink(origin: string, id: string, lang: Lang = "en"): string {
+  return `${origin}/?open=projects&project=${encodeURIComponent(id)}${langParam(lang)}`;
 }
 
-export function appLink(origin: string, app: AppId): string {
-  return `${origin}/?open=${app}`;
+export function appLink(origin: string, app: AppId, lang: Lang = "en"): string {
+  return `${origin}/?open=${app}${langParam(lang)}`;
 }

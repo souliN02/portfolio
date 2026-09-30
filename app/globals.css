@@ -357,6 +357,26 @@ body {
     border-left: 1px solid #1042af;
     box-shadow: inset 1px 0 1px #18bbff;
   }
+
+  /* The language bar, minimized to the tray: a little blue EN or DA tile */
+  .xp-langbar {
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 16px;
+    padding: 0 2px;
+    font: 700 10px/1 var(--xp-font);
+    color: #fff;
+    background: #1c4fc4;
+    border: 1px solid #7fb0f5;
+    border-radius: 2px;
+  }
+  .xp-langbar:hover,
+  .xp-langbar[aria-expanded="true"] { background: #2d66e0; }
+  .xp-langbar-code { display: grid; place-items: center; min-width: 20px; height: 14px; font-size: 9px; font-weight: 700; color: #fff; background: #1c4fc4; border-radius: 2px; }
+  @media (pointer: coarse) {
+    .xp-langbar { min-width: 26px; height: 22px; font-size: 11px; }
+  }
   .xp-taskbar-apps { scrollbar-width: none; }
   .xp-taskbar-apps::-webkit-scrollbar { display: none; }
 

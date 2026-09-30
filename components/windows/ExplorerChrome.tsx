@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useStrings } from "@/lib/language";
 import { ChevronsGlyph } from "@/components/ui/glyphs";
 
 /* Pieces of the XP Explorer window shared by My Projects, Recycle Bin and Internet Explorer */
@@ -40,10 +41,11 @@ export function ToolButton({ icon, label, onClick, disabled, showLabel = true }:
 
 export const ToolSeparator = () => <span className="xp-tool-sep" aria-hidden="true" />;
 
-export function AddressBar({ label = "Address", children }: { label?: string; children: ReactNode }) {
+export function AddressBar({ label, children }: { label?: string; children: ReactNode }) {
+  const t = useStrings();
   return (
     <div className="xp-addressbar">
-      <span className="shrink-0 text-[#6d6d6d]">{label}</span>
+      <span className="shrink-0 text-[#6d6d6d]">{label ?? t.explorer.address}</span>
       {children}
     </div>
   );

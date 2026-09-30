@@ -6,6 +6,8 @@ describe("parseDeepLink", () => {
     expect(parseDeepLink("")).toBeNull();
     expect(parseDeepLink("?utm_source=linkedin")).toBeNull();
     expect(parseDeepLink("?open=nonsense")).toBeNull();
+    // A language alone doesn't skip the boot screen
+    expect(parseDeepLink("?lang=da")).toBeNull();
   });
 
   it("opens a single app", () => {
@@ -36,5 +38,13 @@ describe("link builders round-trip through the parser", () => {
     expect(parseDeepLink(p.search)).toMatchObject({ apps: ["projects"], project: "setsaga" });
     const a = new URL(appLink("https://bekirsaliv.dk", "contact"));
     expect(parseDeepLink(a.search)?.apps).toEqual(["contact"]);
+  });
+
+  it("carries Danish along, and leaves English links clean", () => {
+    expect(appLink("https://bekirsaliv.dk", "about", "da")).toBe("https://bekirsaliv.dk/?open=about&lang=da");
+    expect(appLink("https://bekirsaliv.dk", "about", "en")).toBe("https://bekirsaliv.dk/?open=about");
+    const p = new URL(projectLink("https://bekirsaliv.dk", "nordesk", "da"));
+    expect(p.searchParams.get("lang")).toBe("da");
+    expect(parseDeepLink(p.search)).toMatchObject({ apps: ["projects"], project: "nordesk" });
   });
 });

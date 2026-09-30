@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { APPS, CORNER_ICON, DESKTOP_ICONS, RECYCLE_EMPTY_ICON, type AppId } from "@/data/apps";
+import { CORNER_ICON, DESKTOP_ICONS, RECYCLE_EMPTY_ICON, appsFor, type AppId } from "@/data/apps";
+import { useLang, useStrings } from "@/lib/language";
 import { TASKBAR_H, type Viewport } from "@/lib/windowManager";
 
 export interface Pos {
@@ -77,6 +78,9 @@ export default function DesktopIcons({ positions, selected, binEmpty, onPosition
   latest.current = positions;
   const buttons = useRef<Partial<Record<AppId, HTMLButtonElement | null>>>({});
   const tapped = useRef<AppId | null>(null);
+  const lang = useLang();
+  const t = useStrings().desktop;
+  const apps = appsFor(lang);
 
   const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>, id: AppId) => {
     if (e.button !== 0) return;
@@ -142,11 +146,11 @@ export default function DesktopIcons({ positions, selected, binEmpty, onPosition
   const focusable = selected ?? ALL_ICONS[0];
 
   return (
-    <div role="group" aria-label="Desktop">
+    <div role="group" aria-label={t.label}>
       {ALL_ICONS.map((id) => {
         const pos = positions[id];
         const isSelected = selected === id;
-        const icon = id === "recycle" && binEmpty ? RECYCLE_EMPTY_ICON : APPS[id].icon;
+        const icon = id === "recycle" && binEmpty ? RECYCLE_EMPTY_ICON : apps[id].icon;
         return (
           <button
             key={id}
@@ -155,7 +159,7 @@ export default function DesktopIcons({ positions, selected, binEmpty, onPosition
             }}
             type="button"
             tabIndex={id === focusable ? 0 : -1}
-            aria-label={`${APPS[id].label}. Press Enter to open.`}
+            aria-label={t.iconHint(apps[id].label)}
             className="xp-icon absolute flex touch-none flex-col items-center [-webkit-touch-callout:none]"
             style={{ left: pos.x, top: pos.y, width: ICON_W }}
             onPointerDown={(e) => onPointerDown(e, id)}
@@ -189,7 +193,7 @@ export default function DesktopIcons({ positions, selected, binEmpty, onPosition
               )}
             </span>
             <span className={`xp-icon-label mt-1 max-w-full break-words px-0.5 text-center text-[11px] leading-tight text-white ${isSelected ? "bg-[var(--xp-select)] [text-shadow:none]" : ""}`}>
-              {APPS[id].label}
+              {apps[id].label}
             </span>
           </button>
         );

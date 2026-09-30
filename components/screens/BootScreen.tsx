@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useStrings } from "@/lib/language";
 import { XpFlag } from "@/components/ui/glyphs";
 
 const BOOT_MS = 3000;
@@ -9,6 +10,7 @@ const FADE_MS = 450;
 /** XP-style boot screen. Any key, click or tap skips it. */
 export default function BootScreen({ onFinished }: { onFinished: () => void }) {
   const [fading, setFading] = useState(false);
+  const t = useStrings().boot;
   const onFinishedRef = useRef(onFinished);
   onFinishedRef.current = onFinished;
 
@@ -35,7 +37,7 @@ export default function BootScreen({ onFinished }: { onFinished: () => void }) {
       className={`fixed inset-0 z-[9999] flex cursor-wait flex-col items-center justify-center bg-black transition-opacity ${fading ? "opacity-0" : "opacity-100"}`}
       style={{ transitionDuration: `${FADE_MS}ms` }}
       role="status"
-      aria-label="Starting Portfolio XP"
+      aria-label={t.starting}
     >
       <div className="flex flex-col items-center gap-5">
         <p className="text-sm uppercase tracking-[0.35em] text-white/50">Bekir Saliv</p>
@@ -51,7 +53,7 @@ export default function BootScreen({ onFinished }: { onFinished: () => void }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/xp-loading.gif" alt="" className="mt-6" draggable={false} />
       </div>
-      <p className="absolute bottom-6 text-[11px] text-white/35">Press any key or click to skip</p>
+      <p className="absolute bottom-6 text-[11px] text-white/35">{t.skip}</p>
     </div>
   );
 }

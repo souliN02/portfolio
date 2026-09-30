@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { APPS, RECYCLE_EMPTY_ICON } from "@/data/apps";
+import { RECYCLE_EMPTY_ICON, appsFor } from "@/data/apps";
 import { BIN_ITEMS, type BinItem } from "@/data/recycleBin";
+import { formatDateTime } from "@/lib/i18n";
+import { useLang, useStrings } from "@/lib/language";
 import MessageBox from "@/components/ui/MessageBox";
 import { useDesktop } from "@/components/desktop/DesktopContext";
 import { AddressBar, MenuBar, StatusBar, TaskLink, TaskPane, TaskPanel, ToolButton, Toolbar } from "./ExplorerChrome";
@@ -16,6 +18,9 @@ export default function RecycleBin() {
   const api = useDesktop();
   const [selected, setSelected] = useState<string | null>(null);
   const [dialog, setDialog] = useState<Dialog | null>(null);
+  const lang = useLang();
+  const t = useStrings();
+  const apps = appsFor(lang);
   const items = api.binEmpty ? [] : BIN_ITEMS;
   const icon = (item: BinItem) => (item.kind === "folder" ? FOLDER_ICON : FILE_ICON);
 
@@ -27,14 +32,14 @@ export default function RecycleBin() {
 
   return (
     <div className="relative flex h-full flex-col text-[11px]">
-      <MenuBar items={["File", "Edit", "View", "Favorites", "Tools", "Help"]} />
+      <MenuBar items={t.menus.explorer} />
       <Toolbar>
         <ToolButton
           icon={
             // eslint-disable-next-line @next/next/no-img-element
             <img src={RECYCLE_EMPTY_ICON} alt="" width={22} height={22} />
           }
-          label="Empty Recycle Bin"
+          label={t.bin.empty}
           disabled={!items.length}
           onClick={() => setDialog({ type: "confirmEmpty" })}
         />
@@ -43,7 +48,7 @@ export default function RecycleBin() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={FOLDER_ICON} alt="" width={22} height={22} />
           }
-          label="Restore all items"
+          label={t.bin.restoreAll}
           disabled={!items.length}
           onClick={() => setDialog({ type: "restoreAll" })}
         />
@@ -51,38 +56,38 @@ export default function RecycleBin() {
       <AddressBar>
         <div className="flex min-w-0 flex-1 items-center gap-1 border border-[var(--xp-input-border)] bg-white px-1 py-[3px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={items.length ? APPS.recycle.icon : RECYCLE_EMPTY_ICON} alt="" width={16} height={16} />
-          Recycle Bin
+          <img src={items.length ? apps.recycle.icon : RECYCLE_EMPTY_ICON} alt="" width={16} height={16} />
+          {apps.recycle.label}
         </div>
       </AddressBar>
 
       <div className="flex min-h-0 flex-1">
         <TaskPane>
-          <TaskPanel title="Recycle Bin Tasks">
+          <TaskPanel title={t.bin.tasks}>
             {items.length ? (
               <>
                 <TaskLink icon={RECYCLE_EMPTY_ICON} onClick={() => setDialog({ type: "confirmEmpty" })}>
-                  Empty the Recycle Bin
+                  {t.bin.emptyTask}
                 </TaskLink>
                 <TaskLink icon={FOLDER_ICON} onClick={() => setDialog({ type: "restoreAll" })}>
-                  Restore all items
+                  {t.bin.restoreAll}
                 </TaskLink>
               </>
             ) : (
-              <p className="text-[#555]">Nothing left to delete.</p>
+              <p className="text-[#555]">{t.bin.nothing}</p>
             )}
           </TaskPanel>
-          <TaskPanel title="Other Places">
-            <TaskLink icon={APPS.projects.icon} onClick={() => api.openApp("projects")}>
-              My Projects
+          <TaskPanel title={t.otherPlaces}>
+            <TaskLink icon={apps.projects.icon} onClick={() => api.openApp("projects")}>
+              {apps.projects.label}
             </TaskLink>
-            <TaskLink icon={APPS.cv.icon} onClick={() => api.openApp("cv")}>
-              Bekir&apos;s CV
+            <TaskLink icon={apps.cv.icon} onClick={() => api.openApp("cv")}>
+              {apps.cv.label}
             </TaskLink>
           </TaskPanel>
-          <TaskPanel title="Details">
-            <p className="font-bold">Recycle Bin</p>
-            <p>System Folder</p>
+          <TaskPanel title={t.details}>
+            <p className="font-bold">{apps.recycle.label}</p>
+            <p>{t.bin.systemFolder}</p>
           </TaskPanel>
         </TaskPane>
 
@@ -90,7 +95,7 @@ export default function RecycleBin() {
           <table className="w-full border-collapse text-left">
             <thead className="sticky top-0 bg-[var(--xp-face)]">
               <tr>
-                {["Name", "Original Location", "Date Deleted", "Size"].map((h, i) => (
+                {t.bin.columns.map((h, i) => (
                   <th
                     key={h}
                     scope="col"
@@ -131,7 +136,7 @@ export default function RecycleBin() {
                     <td className="hidden max-w-0 truncate px-2 py-0.5 @xl:table-cell" title={item.from}>
                       {item.from}
                     </td>
-                    <td className="hidden whitespace-nowrap px-2 py-0.5 @xl:table-cell">{item.deleted}</td>
+                    <td className="hidden whitespace-nowrap px-2 py-0.5 @xl:table-cell">{formatDateTime(item.deleted, lang)}</td>
                     <td className="whitespace-nowrap px-2 py-0.5 text-right pointer-coarse:py-2.5">{item.size}</td>
                   </tr>
                 );
@@ -142,7 +147,7 @@ export default function RecycleBin() {
       </div>
 
       <StatusBar>
-        <span className="flex-1">{items.length} objects</span>
+        <span className="flex-1">{t.objects(items.length)}</span>
       </StatusBar>
 
       {dialog?.type === "item" && (
@@ -154,7 +159,7 @@ export default function RecycleBin() {
             ...(dialog.item.action
               ? [
                   {
-                    label: dialog.item.action.label,
+                    label: lang === "da" ? (dialog.item.da.action ?? dialog.item.action.label) : dialog.item.action.label,
                     onClick: () => {
                       close();
                       api.openApp("projects", { project: dialog.item.action!.project });
@@ -162,35 +167,35 @@ export default function RecycleBin() {
                   },
                 ]
               : []),
-            { label: "OK", onClick: close },
+            { label: t.ok, onClick: close },
           ]}
         >
-          {dialog.item.note}
+          {lang === "da" ? dialog.item.da.note : dialog.item.note}
         </MessageBox>
       )}
       {dialog?.type === "confirmEmpty" && (
         <MessageBox
-          title="Confirm Multiple File Delete"
+          title={t.bin.confirmTitle}
           icon="question"
           onClose={close}
           buttons={[
             {
-              label: "Yes",
+              label: t.yes,
               onClick: () => {
                 close();
                 setSelected(null);
                 api.emptyBin();
               },
             },
-            { label: "No", onClick: close },
+            { label: t.no, onClick: close },
           ]}
         >
-          Are you sure you want to delete these {items.length} items?
+          {t.bin.confirm(items.length)}
         </MessageBox>
       )}
       {dialog?.type === "restoreAll" && (
-        <MessageBox title="Restore" icon="warning" onClose={close} buttons={[{ label: "OK", onClick: close }]}>
-          Some things are better left deleted.
+        <MessageBox title={t.bin.restoreTitle} icon="warning" onClose={close} buttons={[{ label: t.ok, onClick: close }]}>
+          {t.bin.restoreText}
         </MessageBox>
       )}
     </div>

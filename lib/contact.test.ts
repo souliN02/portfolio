@@ -22,6 +22,13 @@ describe("validateIdentity", () => {
     expect(validateIdentity("Ada", "ada@example.com")).toEqual({});
     expect(Object.keys(validateIdentity("", "ada@example"))).toEqual(["name", "email"]);
   });
+
+  it("explains problems in the desktop's language", () => {
+    expect(validateIdentity("", "ada@example.com").name).toBe("Please enter your name.");
+    expect(validateIdentity("", "ada@example.com", "da").name).toBe("Skriv dit navn.");
+    const r = validateContact({ name: "Ada", email: "ada@example.com", message: "kort" }, "da");
+    expect(r.ok ? null : r.errors.message).toBe("Skriv en lidt længere meddelelse.");
+  });
 });
 
 describe("e-mail formatting", () => {
