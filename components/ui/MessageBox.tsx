@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useStrings } from "@/lib/language";
 import { sounds } from "@/lib/sounds";
 import { CloseGlyph, ErrorIcon, InfoIcon, QuestionIcon, WarningIcon } from "./glyphs";
 
@@ -24,6 +25,7 @@ const ICONS = { info: InfoIcon, warning: WarningIcon, error: ErrorIcon, question
 /** An XP message box, shown modally over the window it belongs to */
 export default function MessageBox({ title, icon = "info", children, buttons, onClose, focusButton = true }: MessageBoxProps) {
   const titleId = useId();
+  const t = useStrings();
   const firstButton = useRef<HTMLButtonElement>(null);
   const Icon = ICONS[icon];
 
@@ -48,7 +50,7 @@ export default function MessageBox({ title, icon = "info", children, buttons, on
           <span id={titleId} className="truncate">
             {title}
           </span>
-          <button type="button" className="xp-tbtn xp-tbtn-close" aria-label="Close" onClick={onClose}>
+          <button type="button" className="xp-tbtn xp-tbtn-close" aria-label={t.close} onClick={onClose}>
             <CloseGlyph />
           </button>
         </div>

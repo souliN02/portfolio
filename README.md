@@ -18,7 +18,7 @@ My portfolio, built as a Windows XP desktop you can actually use. Double-click t
 | **Games** | XP's games folder: Solitaire (with the bouncing-cards win), Spider Solitaire (1, 2 or 4 suits), FreeCell (Microsoft's numbered deals, so game #1 is XP's game #1), Hearts against three computer players, and Minesweeper. Drag cards or tap to move them, with undo and saved statistics |
 | **Bekir's CV**, **readme.txt**, **Recycle Bin** | The rest of a proper desktop |
 
-Plus a boot screen, the XP Welcome screen, Start menu, taskbar with Quick Launch, a working volume control, balloon tips, Turn Off and Log Off dialogs, and a Mystify screensaver.
+Plus a boot screen, the XP Welcome screen, Start menu, taskbar with Quick Launch, a working volume control, balloon tips, Turn Off and Log Off dialogs, a Mystify screensaver, and the blue screen you'd expect after typing `format c:` into the terminal.
 
 ### Built for the people who visit
 
@@ -27,6 +27,7 @@ Plus a boot screen, the XP Welcome screen, Start menu, taskbar with Quick Launch
   - `/?open=projects&project=linedrift` opens My Projects at LineDrift
   - `/?open=about,contact` opens several windows
   - `/?open=contact` opens the contact form
+- **English or Danish.** The language bar in the tray switches the desktop between the two, first-time visitors get whichever their browser asks for, and `?lang=da` on any link opens it in Danish. The terminal and the games stay English.
 - **Phones work.** Windows open full screen, taps replace double-clicks, and long-press replaces right-click.
 - **Keyboard and screen readers work.** Arrow keys move between icons, Enter opens, Escape closes menus and dialogs, and a skip link leads to the plain text version.
 - **Link previews and search:** Open Graph image, JSON-LD `Person` data, sitemap, and a server-rendered `/simple` page.

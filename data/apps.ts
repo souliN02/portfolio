@@ -1,3 +1,5 @@
+import type { Lang } from "@/lib/i18n";
+
 export const APP_IDS = [
   "projects",
   "about",
@@ -51,6 +53,31 @@ export const APPS: Record<AppId, AppMeta> = {
   hearts: { title: "Hearts", label: "Hearts", desc: "Avoid the Queen of Spades", icon: XP("Hearts"), w: 640, h: 580 },
   recycle: { title: "Recycle Bin", label: "Recycle Bin", desc: "Deleted items", icon: EXTRA("recycle-full"), w: 680, h: 440 },
 };
+
+/** Danish wording for the language bar. The games keep their English names, since the games themselves stay English */
+const APPS_DA: Record<AppId, Pick<AppMeta, "title" | "label" | "desc">> = {
+  projects: { title: "Mine projekter", label: "Mine projekter", desc: "Udvalgte og aktuelle projekter" },
+  about: { title: "Systemegenskaber", label: "Om mig", desc: "Bio, kompetencer, erfaring" },
+  cv: { title: "Bekir_CV.pdf", label: "Bekirs CV", desc: "Åbn CV (PDF, på engelsk)" },
+  contact: { title: "Ny meddelelse", label: "Kontakt", desc: "Send mig en e-mail" },
+  ie: { title: "Internet Explorer", label: "Internet Explorer", desc: "Se mine live-projekter" },
+  terminal: { title: "Kommandoprompt", label: "Terminal", desc: "Kommandolinje (engelsk)" },
+  notepad: { title: "readme.txt - Notesblok", label: "readme.txt", desc: "Velkomstbesked" },
+  games: { title: "Spil", label: "Spil", desc: "Solitaire, FreeCell og flere" },
+  minesweeper: { title: "Minesweeper", label: "Minesweeper", desc: "Find minerne" },
+  solitaire: { title: "Solitaire", label: "Solitaire", desc: "Det klassiske kortspil" },
+  spider: { title: "Spider Solitaire", label: "Spider Solitaire", desc: "To kortspil, ti bunker" },
+  freecell: { title: "FreeCell", label: "FreeCell", desc: "Hvert spil er nummereret" },
+  hearts: { title: "Hearts", label: "Hearts", desc: "Undgå spar dame" },
+  recycle: { title: "Papirkurv", label: "Papirkurv", desc: "Slettede elementer" },
+};
+
+const APPS_IN_DA = Object.fromEntries(APP_IDS.map((id) => [id, { ...APPS[id], ...APPS_DA[id] }])) as Record<AppId, AppMeta>;
+
+/** APPS with titles, labels and descriptions in the desktop's language */
+export function appsFor(lang: Lang): Record<AppId, AppMeta> {
+  return lang === "da" ? APPS_IN_DA : APPS;
+}
 
 export const RECYCLE_EMPTY_ICON = EXTRA("recycle-empty");
 

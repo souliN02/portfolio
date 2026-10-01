@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { COLOR_SCHEMES, PROMPT, complete, introLines, isCommandText, runCommand } from "@/lib/terminal";
+import { COLOR_SCHEMES, PROMPT, complete, introLines, isCommandText, runCommand, type Crash } from "@/lib/terminal";
 import { readStats } from "@/lib/gameStats";
 import { readJson, readStorage, writeStorage } from "@/lib/storage";
 import { useDesktop } from "@/components/desktop/DesktopContext";
@@ -56,6 +56,7 @@ export default function Terminal() {
   const [typed, setTyped] = useState<Line[]>([]);
   const [pending, setPending] = useState<Pending | null>(null);
   const [columns, setColumns] = useState<number>();
+  const [crash, setCrash] = useState<Crash | null>(null);
   const historyRef = useRef<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const probeRef = useRef<HTMLSpanElement>(null);
@@ -121,6 +122,13 @@ export default function Terminal() {
     return () => clearTimeout(t);
   }, [pending]);
 
+  // A crash lets its output finish printing, then a beat later takes the whole desktop down
+  useEffect(() => {
+    if (!crash || pending) return;
+    const t = setTimeout(() => api.crash(crash), 900);
+    return () => clearTimeout(t);
+  }, [crash, pending, api]);
+
   const flush = useCallback(() => {
     if (!pending) return;
     setLines((prev) => [...prev, ...pending.out]);
@@ -158,6 +166,9 @@ export default function Terminal() {
         break;
       case "shutdown":
         api.requestTurnOff();
+        break;
+      case "crash":
+        setCrash(effect.crash);
         break;
     }
 

@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from "react";
 import type { AppId } from "@/data/apps";
+import type { Crash } from "@/lib/terminal";
 import type { WindowProps } from "@/lib/windowManager";
 
 /** What window contents can ask the desktop to do */
@@ -11,6 +12,8 @@ export interface DesktopApi {
   /** Override a window's title bar and taskbar text (Explorer shows the current folder, IE the page) */
   setTitle: (id: AppId, title: string | null) => void;
   requestTurnOff: () => void;
+  /** Blue screen: every window closes, and any key restarts through the boot screen */
+  crash: (crash: Crash) => void;
   /** Apps with an open window, oldest first (the terminal's tasklist) */
   getOpenApps: () => AppId[];
   binEmpty: boolean;

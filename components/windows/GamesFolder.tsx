@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { APPS, GAMES, type AppId } from "@/data/apps";
+import { GAMES, appsFor, type AppId } from "@/data/apps";
+import { useLang, useStrings } from "@/lib/language";
 import { useDesktop } from "@/components/desktop/DesktopContext";
 import { AddressBar, MenuBar, StatusBar, TaskLink, TaskPane, TaskPanel } from "./ExplorerChrome";
 
@@ -9,41 +10,43 @@ import { AddressBar, MenuBar, StatusBar, TaskLink, TaskPane, TaskPanel } from ".
 export default function GamesFolder() {
   const api = useDesktop();
   const [selected, setSelected] = useState<AppId | null>(null);
-  const sel = selected ? APPS[selected] : null;
+  const t = useStrings();
+  const apps = appsFor(useLang());
+  const sel = selected ? apps[selected] : null;
 
   return (
     <div className="flex h-full flex-col text-[11px]">
-      <MenuBar items={["File", "Edit", "View", "Favorites", "Tools", "Help"]} />
+      <MenuBar items={t.menus.explorer} />
       <AddressBar>
         <div className="flex min-w-0 flex-1 items-center gap-1 border border-[var(--xp-input-border)] bg-white px-1 py-[3px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={APPS.games.icon} alt="" width={16} height={16} />
-          <span className="truncate">C:\Documents and Settings\All Users\Start Menu\Programs\Games</span>
+          <img src={apps.games.icon} alt="" width={16} height={16} />
+          <span className="truncate">{t.games.path}</span>
         </div>
       </AddressBar>
 
       <div className="flex min-h-0 flex-1">
         <TaskPane>
-          <TaskPanel title="Game Tasks">
+          <TaskPanel title={t.games.tasks}>
             {sel && selected ? (
               <TaskLink icon={sel.icon} onClick={() => api.openApp(selected)}>
-                Play {sel.label}
+                {t.games.play(sel.label)}
               </TaskLink>
             ) : (
-              <p className="text-[#555]">Select a game to see its details.</p>
+              <p className="text-[#555]">{t.games.select}</p>
             )}
           </TaskPanel>
-          <TaskPanel title="Other Places">
-            <TaskLink icon={APPS.projects.icon} onClick={() => api.openApp("projects")}>
-              My Projects
+          <TaskPanel title={t.otherPlaces}>
+            <TaskLink icon={apps.projects.icon} onClick={() => api.openApp("projects")}>
+              {apps.projects.label}
             </TaskLink>
-            <TaskLink icon={APPS.terminal.icon} onClick={() => api.openApp("terminal")}>
-              Command Prompt
+            <TaskLink icon={apps.terminal.icon} onClick={() => api.openApp("terminal")}>
+              {apps.terminal.title}
             </TaskLink>
           </TaskPanel>
-          <TaskPanel title="Details">
-            <p className="font-bold">{sel?.label ?? "Games"}</p>
-            <p>{sel ? sel.desc : `${GAMES.length} games`}</p>
+          <TaskPanel title={t.details}>
+            <p className="font-bold">{sel?.label ?? apps.games.label}</p>
+            <p>{sel ? sel.desc : t.games.count(GAMES.length)}</p>
           </TaskPanel>
         </TaskPane>
 
@@ -51,7 +54,7 @@ export default function GamesFolder() {
           className="grid min-w-0 flex-1 auto-rows-min content-start gap-1 overflow-auto bg-white p-2 [grid-template-columns:repeat(auto-fill,minmax(88px,1fr))]"
           onClick={(e) => e.target === e.currentTarget && setSelected(null)}
           role="list"
-          aria-label="Games"
+          aria-label={apps.games.label}
         >
           {GAMES.map((id) => {
             const isSel = selected === id;
@@ -71,11 +74,11 @@ export default function GamesFolder() {
                     api.openApp(id);
                   }
                 }}
-                aria-label={`${APPS[id].label}: ${APPS[id].desc}`}
+                aria-label={`${apps[id].label}: ${apps[id].desc}`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={APPS[id].icon} alt="" width={32} height={32} draggable={false} />
-                <span className={`px-0.5 leading-tight ${isSel ? "bg-[var(--xp-select)] text-white" : ""}`}>{APPS[id].label}</span>
+                <img src={apps[id].icon} alt="" width={32} height={32} draggable={false} />
+                <span className={`px-0.5 leading-tight ${isSel ? "bg-[var(--xp-select)] text-white" : ""}`}>{apps[id].label}</span>
               </button>
             );
           })}
@@ -83,7 +86,7 @@ export default function GamesFolder() {
       </div>
 
       <StatusBar>
-        <span className="flex-1">{sel ? sel.desc : `${GAMES.length} objects`}</span>
+        <span className="flex-1">{sel ? sel.desc : t.objects(GAMES.length)}</span>
       </StatusBar>
     </div>
   );

@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { APPS } from "@/data/apps";
+import type { UiStrings } from "@/data/ui";
 import { PROFILE } from "@/data/profile";
-import { PROJECTS, primaryLink } from "@/data/projects";
+import { PROJECTS, localizeProject, primaryLink, projectsFor } from "@/data/projects";
+import type { Lang } from "@/lib/i18n";
 import { blockIdle } from "@/lib/idle";
+import { useLang, useStrings } from "@/lib/language";
 import { BROWSER_HOME, hostOf, normalizeUrl } from "@/lib/text";
 import type { WinState } from "@/lib/windowManager";
 import { BackIcon, ForwardIcon, GoIcon, HomeIcon, NewWindowIcon, RefreshIcon, XpFlag } from "@/components/ui/glyphs";
@@ -15,14 +18,17 @@ const HOME = BROWSER_HOME;
 const FRAMEABLE = PROJECTS.filter((p) => p.frameUrl);
 const FRAMEABLE_URLS = new Set(FRAMEABLE.map((p) => p.frameUrl));
 
-function pageTitle(url: string): string {
-  if (url === HOME) return "Bekir's Home Page";
+function pageTitle(url: string, t: UiStrings["ie"], lang: Lang): string {
+  if (url === HOME) return t.homeTitle;
   const project = FRAMEABLE.find((p) => p.frameUrl && url.startsWith(p.frameUrl));
-  return project ? project.title : hostOf(url);
+  return project ? localizeProject(project, lang).title : hostOf(url);
 }
 
 export default function InternetExplorer({ win }: { win: WinState }) {
   const { setTitle } = useDesktop();
+  const lang = useLang();
+  const strings = useStrings();
+  const t = strings.ie;
   const [nav, setNav] = useState(() => ({ stack: [normalizeUrl(win.props.url)], index: 0 }));
   const [draft, setDraft] = useState<string | null>(null);
   const [loading, setLoading] = useState(nav.stack[0] !== HOME);
@@ -52,8 +58,8 @@ export default function InternetExplorer({ win }: { win: WinState }) {
   }, [win.nonce, win.props.url]);
 
   useEffect(() => {
-    setTitle("ie", `${pageTitle(url)} - Internet Explorer`);
-  }, [url, setTitle]);
+    setTitle("ie", `${pageTitle(url, t, lang)} - Internet Explorer`);
+  }, [url, t, lang, setTitle]);
   useEffect(
     () => () => {
       setTitle("ie", null);
@@ -75,27 +81,27 @@ export default function InternetExplorer({ win }: { win: WinState }) {
     <div className="flex h-full flex-col text-[11px]">
       <div className="flex items-stretch bg-[var(--xp-face)]">
         <div className="min-w-0 flex-1">
-          <MenuBar items={["File", "Edit", "View", "Favorites", "Tools", "Help"]} />
+          <MenuBar items={strings.menus.explorer} />
         </div>
         <div className="grid w-[38px] shrink-0 place-items-center border-l border-[#d8d2bd] bg-white" aria-hidden="true">
           <XpFlag size={22} className={loading ? "animate-pulse" : ""} />
         </div>
       </div>
       <Toolbar>
-        <ToolButton icon={<BackIcon disabled={nav.index === 0} />} label="Back" disabled={nav.index === 0} onClick={() => step(-1)} />
-        <ToolButton icon={<ForwardIcon disabled={nav.index >= nav.stack.length - 1} />} label="Forward" showLabel={false} disabled={nav.index >= nav.stack.length - 1} onClick={() => step(1)} />
+        <ToolButton icon={<BackIcon disabled={nav.index === 0} />} label={strings.explorer.back} disabled={nav.index === 0} onClick={() => step(-1)} />
+        <ToolButton icon={<ForwardIcon disabled={nav.index >= nav.stack.length - 1} />} label={strings.explorer.forward} showLabel={false} disabled={nav.index >= nav.stack.length - 1} onClick={() => step(1)} />
         <ToolButton
           icon={<RefreshIcon />}
-          label="Refresh"
+          label={t.refresh}
           showLabel={false}
           onClick={() => {
             setReloadKey((k) => k + 1);
             setLoading(url !== HOME);
           }}
         />
-        <ToolButton icon={<HomeIcon />} label="Home" showLabel={false} onClick={() => go(HOME)} />
+        <ToolButton icon={<HomeIcon />} label={t.home} showLabel={false} onClick={() => go(HOME)} />
         <ToolSeparator />
-        <ToolButton icon={<NewWindowIcon />} label="Open in new window" disabled={url === HOME} onClick={() => window.open(url, "_blank", "noopener")} />
+        <ToolButton icon={<NewWindowIcon />} label={t.newWindow} disabled={url === HOME} onClick={() => window.open(url, "_blank", "noopener")} />
       </Toolbar>
       <AddressBar>
         <form
@@ -108,7 +114,7 @@ export default function InternetExplorer({ win }: { win: WinState }) {
           <label className="flex min-w-0 flex-1 items-center gap-1 border border-[var(--xp-input-border)] bg-white pl-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={APPS.ie.icon} alt="" width={16} height={16} className="shrink-0" />
-            <span className="sr-only">Address</span>
+            <span className="sr-only">{strings.explorer.address}</span>
             <input
               className="min-w-0 flex-1 py-[3px] outline-none"
               value={draft ?? (url === HOME ? "about:home" : url)}
@@ -120,18 +126,18 @@ export default function InternetExplorer({ win }: { win: WinState }) {
               inputMode="url"
             />
           </label>
-          <button type="submit" className="xp-tool !h-6 shrink-0" aria-label="Go">
+          <button type="submit" className="xp-tool !h-6 shrink-0" aria-label={t.go}>
             <GoIcon />
-            <span className="hidden @md:inline">Go</span>
+            <span className="hidden @md:inline">{t.go}</span>
           </button>
         </form>
       </AddressBar>
       <div className="xp-addressbar !gap-1 overflow-x-auto">
-        <span className="shrink-0 text-[#6d6d6d]">Links</span>
-        <LinkButton onClick={() => go(HOME)}>Home</LinkButton>
+        <span className="shrink-0 text-[#6d6d6d]">{t.links}</span>
+        <LinkButton onClick={() => go(HOME)}>{t.home}</LinkButton>
         {FRAMEABLE.map((p) => (
           <LinkButton key={p.id} onClick={() => go(p.frameUrl!)}>
-            {p.title}
+            {localizeProject(p, lang).title}
           </LinkButton>
         ))}
         <LinkButton onClick={() => window.open(PROFILE.links.github, "_blank", "noopener")}>GitHub ↗</LinkButton>
@@ -144,7 +150,7 @@ export default function InternetExplorer({ win }: { win: WinState }) {
           onClick={() => window.open(url, "_blank", "noopener")}
         >
           <span aria-hidden="true">ⓘ</span>
-          Some websites don&apos;t allow being shown inside other pages. If this page stays blank, click here to open it in a new window.
+          {t.blocked}
         </button>
       )}
 
@@ -165,7 +171,7 @@ export default function InternetExplorer({ win }: { win: WinState }) {
           <iframe
             key={`${reloadKey}-${url}`}
             src={url}
-            title={pageTitle(url)}
+            title={pageTitle(url, t, lang)}
             className="h-full w-full border-0"
             onLoad={() => setLoading(false)}
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
@@ -175,11 +181,11 @@ export default function InternetExplorer({ win }: { win: WinState }) {
       </div>
 
       <StatusBar>
-        <span className="flex-1">{loading ? `Opening page ${url}...` : "Done"}</span>
+        <span className="flex-1">{loading ? t.opening(url) : t.done}</span>
         <span className="flex w-[110px] items-center gap-1">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/xp-icons/Earth (fixed).ico" alt="" width={14} height={14} />
-          Internet
+          {t.zone}
         </span>
       </StatusBar>
     </div>
@@ -198,22 +204,25 @@ function LinkButton({ onClick, children }: { onClick: () => void; children: Reac
 
 /** The built-in home page: an early-2000s personal homepage listing the live projects */
 function HomePage({ onOpen }: { onOpen: (url: string) => void }) {
-  const others = PROJECTS.filter((p) => !p.frameUrl && p.id !== "portfolio" && primaryLink(p)?.kind === "live");
+  const t = useStrings().ie;
+  const projects = projectsFor(useLang());
+  const framed = projects.filter((p) => p.frameUrl);
+  const others = projects.filter((p) => !p.frameUrl && p.id !== "portfolio" && primaryLink(p)?.kind === "live");
   return (
     <div className="h-full overflow-y-auto bg-[#f3f6fc] font-[Verdana,Tahoma,sans-serif] text-[11px]">
       <div className="flex items-center gap-3 bg-gradient-to-r from-[#0a3a9c] via-[#2d6ae0] to-[#8fb7f5] px-4 py-3 text-white">
         <XpFlag size={32} />
         <div>
-          <h1 className="text-[18px] font-bold leading-tight">Bekir&apos;s Home Page</h1>
-          <p className="text-white/85">Live projects, running right here in Internet Explorer</p>
+          <h1 className="text-[18px] font-bold leading-tight">{t.homeTitle}</h1>
+          <p className="text-white/85">{t.tagline}</p>
         </div>
       </div>
       <div className="mx-auto max-w-[720px] space-y-4 p-4">
         <p>
-          Welcome! These projects are live on the web. Click <strong>Open here</strong> to use one inside this window, or open it in a new tab.
+          {t.introStart} <strong>{t.openHere}</strong> {t.introEnd}
         </p>
         <div className="grid gap-3 @xl:grid-cols-2">
-          {FRAMEABLE.map((p) => (
+          {framed.map((p) => (
             <div key={p.id} className="border border-[#9db8e0] bg-white p-3 shadow-sm">
               <div className="flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -225,10 +234,10 @@ function HomePage({ onOpen }: { onOpen: (url: string) => void }) {
               </div>
               <div className="mt-3 flex gap-1.5">
                 <button type="button" className="xp-button" onClick={() => onOpen(p.frameUrl!)}>
-                  Open here
+                  {t.openHere}
                 </button>
                 <a className="xp-button inline-flex items-center" href={p.frameUrl} target="_blank" rel="noopener noreferrer">
-                  New tab
+                  {t.newTab}
                 </a>
               </div>
             </div>
@@ -236,8 +245,8 @@ function HomePage({ onOpen }: { onOpen: (url: string) => void }) {
         </div>
         {others.length > 0 && (
           <div>
-            <h2 className="mb-1 font-bold text-[#0c32a8]">More live sites</h2>
-            <p className="mb-1 text-[#555]">These open in a new tab.</p>
+            <h2 className="mb-1 font-bold text-[#0c32a8]">{t.more}</h2>
+            <p className="mb-1 text-[#555]">{t.moreNote}</p>
             <ul className="list-disc space-y-0.5 pl-5">
               {others.map((p) => {
                 const link = primaryLink(p)!;
@@ -254,7 +263,7 @@ function HomePage({ onOpen }: { onOpen: (url: string) => void }) {
           </div>
         )}
         <p className="border-t border-[#c9d6ee] pt-2 text-center text-[10px] text-[#777]">
-          Best viewed in Internet Explorer 6 at 1024×768. You are visitor number 0004242.
+          {t.footer}
         </p>
       </div>
     </div>

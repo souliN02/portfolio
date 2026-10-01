@@ -20,7 +20,15 @@ export type TerminalEffect =
   | { type: "openUrl"; url: string }
   | { type: "color"; index: number }
   | { type: "title"; text: string | null }
-  | { type: "shutdown" };
+  | { type: "shutdown" }
+  | { type: "crash"; crash: Crash };
+
+/** What the blue screen blames, once the output has printed */
+export interface Crash {
+  /** XP's name for the stop error */
+  stop: "CRITICAL_OBJECT_TERMINATION" | "UNMOUNTABLE_BOOT_VOLUME";
+  file: string;
+}
 
 export interface CommandContext {
   history: string[];
@@ -440,9 +448,12 @@ function hash(text: string): number {
 const pid = (exe: string) => 1000 + (hash(exe) % 2000) * 4;
 const mem = (exe: string) => `${(2000 + (hash(`${exe}!`) % 28000)).toLocaleString("en-US")} K`;
 
+/** Ending one of these takes Windows down with it (a real XP does that for csrss and winlogon; Explorer is artistic licence) */
+const CRITICAL = new Set(["csrss.exe", "winlogon.exe", "explorer.exe"]);
+
 function processes(openApps: AppId[] = []): string[] {
-  // The shell always runs; Explorer windows (My Projects, Games, Recycle Bin) all live inside it
-  const running = new Set(["explorer.exe", "cmd.exe", ...openApps.map((id) => EXE[id])]);
+  // The system and the shell always run; Explorer windows (My Projects, Games, Recycle Bin) all live inside the shell
+  const running = new Set([...CRITICAL, "cmd.exe", ...openApps.map((id) => EXE[id])]);
   return [...running];
 }
 
@@ -477,7 +488,7 @@ function taskkill(args: string[], ctx: CommandContext): CommandResult {
   if (!exe) return { output: [`ERROR: The process "${byPid ?? name}" not found.`] };
   const apps = (ctx.openApps ?? []).filter((id) => EXE[id] === exe);
   const output = [`SUCCESS: The process "${exe}" with PID ${pid(exe)} has been terminated.`];
-  if (exe === "explorer.exe") output.push("Explorer restarted itself. Its windows didn't.");
+  if (CRITICAL.has(exe)) return { output, effect: { type: "crash", crash: { stop: "CRITICAL_OBJECT_TERMINATION", file: exe.toUpperCase() } } };
   if (exe === "cmd.exe") return { output, effect: { type: "exit" } };
   return { output, effect: apps.length ? { type: "closeApps", apps } : undefined };
 }
@@ -799,8 +810,14 @@ export function runCommand(raw: string, ctx: CommandContext): CommandResult {
     case "rmdir":
     case "rd":
       return { output: /-rf|\/s\b/i.test(args) ? ["Nice try. Everything important is on GitHub anyway."] : ["Access is denied."] };
-    case "format":
-      return { output: ["WARNING, ALL DATA ON NON-REMOVABLE DISK", "DRIVE C: WILL BE LOST!", "Proceed with Format (Y/N)? N", "", "Format cancelled. That was close."] };
+    case "format": {
+      if (!arg1) return { output: ["Required parameter missing -", "Try 'format c:'. Or better, don't."] };
+      if (!/^c:?$/.test(arg1)) return { output: ["Invalid drive specification."] };
+      return {
+        output: ["The type of the file system is NTFS.", "", "WARNING, ALL DATA ON NON-REMOVABLE DISK", "DRIVE C: WILL BE LOST!", "Proceed with Format (Y/N)? Y", "", "Formatting 42,069 MB..."],
+        effect: { type: "crash", crash: { stop: "UNMOUNTABLE_BOOT_VOLUME", file: "FORMAT.COM" } },
+      };
+    }
   }
 
   return {

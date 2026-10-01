@@ -2,16 +2,21 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Globe, Link as LinkIcon, Mail } from "lucide-react";
-import { APPS } from "@/data/apps";
+import { appsFor } from "@/data/apps";
 import { PROFILE } from "@/data/profile";
-import { PROJECTS, PROJECT_GROUPS, getProject, projectsInGroup, type Project } from "@/data/projects";
+import { getProject, groupsFor, projectsFor, type Project } from "@/data/projects";
 import { appLink, projectLink } from "@/lib/deepLink";
+import { useLang, useStrings } from "@/lib/language";
 import type { WinState } from "@/lib/windowManager";
 import { BackIcon, ForwardIcon, GitHubMark, UpFolderIcon } from "@/components/ui/glyphs";
 import { useDesktop } from "@/components/desktop/DesktopContext";
 import { AddressBar, MenuBar, StatusBar, TaskLink, TaskPane, TaskPanel, ToolButton, ToolSeparator, Toolbar } from "./ExplorerChrome";
 
-const ROOT_PATH = "C:\\Users\\Bekir\\My Projects";
+/** The projects in the desktop's language, and a lookup by id */
+function useProjects() {
+  const projects = projectsFor(useLang());
+  return { projects, find: (id: string | null) => (id ? projects.find((p) => p.id === id) : undefined) };
+}
 
 interface Nav {
   stack: (string | null)[];
@@ -21,12 +26,16 @@ interface Nav {
 export default function ProjectsExplorer({ win }: { win: WinState }) {
   const api = useDesktop();
   const { setTitle } = api;
+  const lang = useLang();
+  const t = useStrings();
+  const apps = appsFor(lang);
+  const { projects, find } = useProjects();
   const [nav, setNav] = useState<Nav>(() => ({ stack: [getProject(win.props.project ?? "")?.id ?? null], index: 0 }));
   const [selected, setSelected] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   const current = nav.stack[nav.index] ?? null;
-  const project = current ? getProject(current) : undefined;
+  const project = find(current);
 
   const go = useCallback((id: string | null) => {
     setNav((n) => (n.stack[n.index] === id ? n : { stack: [...n.stack.slice(0, n.index + 1), id], index: n.index + 1 }));
@@ -49,10 +58,10 @@ export default function ProjectsExplorer({ win }: { win: WinState }) {
   }, [status]);
 
   const copyLink = async () => {
-    const url = project ? projectLink(window.location.origin, project.id) : appLink(window.location.origin, "projects");
+    const url = project ? projectLink(window.location.origin, project.id, lang) : appLink(window.location.origin, "projects", lang);
     try {
       await navigator.clipboard.writeText(url);
-      setStatus("Link copied to the clipboard");
+      setStatus(t.projects.linkCopied);
     } catch {
       setStatus(url);
     }
@@ -60,8 +69,8 @@ export default function ProjectsExplorer({ win }: { win: WinState }) {
 
   const message = () =>
     api.openApp("contact", {
-      subject: project ? `Question about ${project.title}` : "Your projects",
-      message: project ? `Hi Bekir,\n\nI have a question about ${project.title}: ` : "Hi Bekir,\n\nI've been looking at your projects. ",
+      subject: project ? t.projects.askSubject(project.title) : t.projects.generalSubject,
+      message: project ? t.projects.askMessage(project.title) : t.projects.generalMessage,
     });
   const open = (id: string) => {
     setSelected(id);
@@ -70,35 +79,35 @@ export default function ProjectsExplorer({ win }: { win: WinState }) {
 
   return (
     <div className="flex h-full flex-col text-[11px]">
-      <MenuBar items={["File", "Edit", "View", "Favorites", "Tools", "Help"]} />
+      <MenuBar items={t.menus.explorer} />
       <Toolbar>
-        <ToolButton icon={<BackIcon disabled={nav.index === 0} />} label="Back" disabled={nav.index === 0} onClick={() => setNav((n) => ({ ...n, index: n.index - 1 }))} />
+        <ToolButton icon={<BackIcon disabled={nav.index === 0} />} label={t.explorer.back} disabled={nav.index === 0} onClick={() => setNav((n) => ({ ...n, index: n.index - 1 }))} />
         <ToolButton
           icon={<ForwardIcon disabled={nav.index >= nav.stack.length - 1} />}
-          label="Forward"
+          label={t.explorer.forward}
           showLabel={false}
           disabled={nav.index >= nav.stack.length - 1}
           onClick={() => setNav((n) => ({ ...n, index: n.index + 1 }))}
         />
-        <ToolButton icon={<UpFolderIcon />} label="Up" showLabel={false} disabled={!project} onClick={() => go(null)} />
+        <ToolButton icon={<UpFolderIcon />} label={t.explorer.up} showLabel={false} disabled={!project} onClick={() => go(null)} />
         <ToolSeparator />
-        <ToolButton icon={<Mail className="h-5 w-5 text-[#2a6ad8]" />} label="E-mail me" onClick={message} />
-        <ToolButton icon={<LinkIcon className="h-5 w-5 text-[#3a64b8]" />} label="Copy link" onClick={copyLink} />
+        <ToolButton icon={<Mail className="h-5 w-5 text-[#2a6ad8]" />} label={t.projects.emailMe} onClick={message} />
+        <ToolButton icon={<LinkIcon className="h-5 w-5 text-[#3a64b8]" />} label={t.projects.copyLink} onClick={copyLink} />
       </Toolbar>
       <AddressBar>
         <label className="flex min-w-0 flex-1 items-center gap-1 border border-[var(--xp-input-border)] bg-white pl-1">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={project?.icon ?? APPS.projects.icon} alt="" width={16} height={16} className="shrink-0" />
-          <span className="sr-only">Go to folder</span>
+          <img src={project?.icon ?? apps.projects.icon} alt="" width={16} height={16} className="shrink-0" />
+          <span className="sr-only">{t.projects.goToFolder}</span>
           <select
             value={current ?? ""}
             onChange={(e) => go(e.target.value || null)}
             className="min-w-0 flex-1 cursor-pointer truncate bg-white py-[3px] outline-none"
           >
-            <option value="">{ROOT_PATH}</option>
-            {PROJECTS.map((p) => (
+            <option value="">{t.projects.root}</option>
+            {projects.map((p) => (
               <option key={p.id} value={p.id}>
-                {`${ROOT_PATH}\\${p.title}`}
+                {`${t.projects.root}\\${p.title}`}
               </option>
             ))}
           </select>
@@ -119,8 +128,8 @@ export default function ProjectsExplorer({ win }: { win: WinState }) {
       </div>
 
       <StatusBar>
-        <span className="flex-1">{status ?? (project ? project.tagline : selected ? getProject(selected)?.tagline : `${PROJECTS.length} objects`)}</span>
-        <span className="hidden w-[120px] @md:block">My Computer</span>
+        <span className="flex-1">{status ?? (project ? project.tagline : selected ? find(selected)?.tagline : t.objects(projects.length))}</span>
+        <span className="hidden w-[120px] @md:block">{t.projects.myComputer}</span>
       </StatusBar>
     </div>
   );
@@ -139,15 +148,18 @@ function ProjectTiles({
   onOpen: (id: string) => void;
   touch: boolean;
 }) {
+  const lang = useLang();
+  const t = useStrings();
+  const { projects } = useProjects();
   let index = 0;
   return (
     <div className="space-y-5 p-4" onClick={(e) => e.target === e.currentTarget && onSelect("")}>
-      {PROJECT_GROUPS.map((group) => (
+      {groupsFor(lang).map((group) => (
         <section key={group.id}>
           <h2 className="text-[12px] font-bold text-[#0c32a8]">{group.label}</h2>
           <div className="mb-2 mt-1 h-px bg-gradient-to-r from-[#7ba2e7] to-transparent" />
           <ul className="grid grid-cols-1 gap-x-4 gap-y-2 @lg:grid-cols-2 @4xl:grid-cols-3">
-            {projectsInGroup(group.id).map((p) => {
+            {projects.filter((p) => p.group === group.id).map((p) => {
               const isSelected = selected === p.id;
               return (
                 <li key={p.id} className="animate-fadeIn" style={{ animationDelay: `${index++ * 40}ms` }}>
@@ -163,7 +175,7 @@ function ProjectTiles({
                       }
                     }}
                     onFocus={() => onSelect(p.id)}
-                    aria-label={`${p.title}: ${p.tagline}. Open folder.`}
+                    aria-label={t.projects.openFolder(p.title, p.tagline)}
                   >
                     <span className="relative shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -192,25 +204,28 @@ function ProjectTiles({
 
 function RootTasks({ selected, onCopy, onMessage }: { selected: string | null; onCopy: () => void; onMessage: () => void }) {
   const api = useDesktop();
-  const sel = selected ? getProject(selected) : undefined;
+  const t = useStrings();
+  const apps = appsFor(useLang());
+  const { projects, find } = useProjects();
+  const sel = find(selected);
   return (
     <>
-      <TaskPanel title="Project Tasks">
-        <TaskLink icon={APPS.contact.icon} onClick={onMessage}>
-          E-mail me about my work
+      <TaskPanel title={t.projects.tasks}>
+        <TaskLink icon={apps.contact.icon} onClick={onMessage}>
+          {t.projects.emailAboutWork}
         </TaskLink>
-        <TaskLink icon={APPS.cv.icon} onClick={() => api.openApp("cv")}>
-          View my CV
+        <TaskLink icon={apps.cv.icon} onClick={() => api.openApp("cv")}>
+          {t.projects.viewCv}
         </TaskLink>
-        <TaskLink icon={APPS.ie.icon} onClick={() => api.openApp("ie")}>
-          Browse live demos
+        <TaskLink icon={apps.ie.icon} onClick={() => api.openApp("ie")}>
+          {t.projects.browseDemos}
         </TaskLink>
         <TaskLink icon="/xp-icons/Internet Properties.ico" onClick={onCopy}>
-          Copy link to this folder
+          {t.projects.copyFolderLink}
         </TaskLink>
       </TaskPanel>
       <OtherPlaces />
-      <TaskPanel title="Details">
+      <TaskPanel title={t.details}>
         {sel ? (
           <>
             <p className="font-bold">{sel.title}</p>
@@ -221,10 +236,8 @@ function RootTasks({ selected, onCopy, onMessage }: { selected: string | null; o
           </>
         ) : (
           <>
-            <p className="font-bold">My Projects</p>
-            <p>
-              {PROJECTS.length} projects. Double-click a folder to open it{api.touch ? " (tap on touch screens)" : ""}.
-            </p>
+            <p className="font-bold">{apps.projects.label}</p>
+            <p>{t.projects.count(projects.length, api.touch)}</p>
           </>
         )}
       </TaskPanel>
@@ -234,34 +247,36 @@ function RootTasks({ selected, onCopy, onMessage }: { selected: string | null; o
 
 function ProjectTasks({ project, onUp, onCopy, onMessage }: { project: Project; onUp: () => void; onCopy: () => void; onMessage: () => void }) {
   const api = useDesktop();
+  const t = useStrings();
+  const apps = appsFor(useLang());
   return (
     <>
-      <TaskPanel title="Project Tasks">
+      <TaskPanel title={t.projects.tasks}>
         {project.links.map((l) => (
           <TaskLink key={l.href} icon={l.kind === "live" ? "/xp-icons/Earth (fixed).ico" : l.kind === "release" ? "/xp-icons/Disk Image File.ico" : "/xp-icons/File.ico"} href={l.href}>
-            {l.kind === "live" ? (l.label.includes(".") ? `Visit ${l.label}` : "Visit the live site") : l.kind === "source" ? "View source on GitHub" : `Download ${l.label}`}
+            {l.kind === "live" ? (l.label.includes(".") ? t.projects.visit(l.label) : t.projects.visitLive) : l.kind === "source" ? t.projects.viewSource : t.projects.download(l.label)}
           </TaskLink>
         ))}
         {project.frameUrl && (
-          <TaskLink icon={APPS.ie.icon} onClick={() => api.openApp("ie", { url: project.frameUrl })}>
-            Open in Internet Explorer
+          <TaskLink icon={apps.ie.icon} onClick={() => api.openApp("ie", { url: project.frameUrl })}>
+            {t.projects.openInIe}
           </TaskLink>
         )}
-        <TaskLink icon={APPS.contact.icon} onClick={onMessage}>
-          E-mail me about this project
+        <TaskLink icon={apps.contact.icon} onClick={onMessage}>
+          {t.projects.emailAboutProject}
         </TaskLink>
         <TaskLink icon="/xp-icons/Internet Properties.ico" onClick={onCopy}>
-          Copy link to this project
+          {t.projects.copyProjectLink}
         </TaskLink>
       </TaskPanel>
       <OtherPlaces onUp={onUp} />
-      <TaskPanel title="Details">
+      <TaskPanel title={t.details}>
         <p className="font-bold">{project.title}</p>
-        <p>File Folder</p>
+        <p>{t.projects.fileFolder}</p>
         <p className="text-[#555]">
           {project.period} · {project.status}
         </p>
-        <p className="text-[#555]">{project.tech.length} technologies</p>
+        <p className="text-[#555]">{t.projects.technologies(project.tech.length)}</p>
       </TaskPanel>
     </>
   );
@@ -269,21 +284,23 @@ function ProjectTasks({ project, onUp, onCopy, onMessage }: { project: Project; 
 
 function OtherPlaces({ onUp }: { onUp?: () => void }) {
   const api = useDesktop();
+  const t = useStrings();
+  const apps = appsFor(useLang());
   return (
-    <TaskPanel title="Other Places">
+    <TaskPanel title={t.otherPlaces}>
       {onUp && (
-        <TaskLink icon={APPS.projects.icon} onClick={onUp}>
-          My Projects
+        <TaskLink icon={apps.projects.icon} onClick={onUp}>
+          {apps.projects.label}
         </TaskLink>
       )}
-      <TaskLink icon={APPS.about.icon} onClick={() => api.openApp("about")}>
-        About Me
+      <TaskLink icon={apps.about.icon} onClick={() => api.openApp("about")}>
+        {apps.about.label}
       </TaskLink>
-      <TaskLink icon={APPS.contact.icon} onClick={() => api.openApp("contact")}>
-        Contact
+      <TaskLink icon={apps.contact.icon} onClick={() => api.openApp("contact")}>
+        {apps.contact.label}
       </TaskLink>
-      <TaskLink icon={APPS.recycle.icon} onClick={() => api.openApp("recycle")}>
-        Recycle Bin
+      <TaskLink icon={apps.recycle.icon} onClick={() => api.openApp("recycle")}>
+        {apps.recycle.label}
       </TaskLink>
     </TaskPanel>
   );
@@ -293,6 +310,8 @@ function OtherPlaces({ onUp }: { onUp?: () => void }) {
 
 function ProjectDetail({ project: p }: { project: Project }) {
   const api = useDesktop();
+  const t = useStrings().projects;
+  const apps = appsFor(useLang());
   return (
     <article className="animate-fadeIn space-y-3 p-4 text-[12px] leading-relaxed text-[#1b1b1b]">
       <header className="flex items-start gap-3">
@@ -303,8 +322,9 @@ function ProjectDetail({ project: p }: { project: Project }) {
           <p className="text-[#555]">{p.tagline}</p>
           <div className="mt-1 flex flex-wrap gap-1 text-[10px]">
             <span className="rounded-sm border border-[#aca899] bg-[var(--xp-face)] px-1.5">{p.period}</span>
+            {p.flagship && <span className="rounded-sm border border-[#b58a18] bg-[#fff1c2] px-1.5">{t.flagship}</span>}
             {p.badges.map((b) => (
-              <span key={b} className={`rounded-sm border px-1.5 ${b === "Flagship" ? "border-[#b58a18] bg-[#fff1c2]" : "border-[#9db8e0] bg-[#eef3fd]"}`}>
+              <span key={b} className="rounded-sm border border-[#9db8e0] bg-[#eef3fd] px-1.5">
                 {b}
               </span>
             ))}
@@ -315,7 +335,7 @@ function ProjectDetail({ project: p }: { project: Project }) {
       <p className="border border-[#d6dff7] bg-[#f5f8fe] p-2">{p.summary}</p>
 
       {p.image && (
-        <a href={p.image.src} target="_blank" rel="noopener noreferrer" title={`Open ${p.image.alt}`} className="block border border-[#aca899] hover:border-[var(--xp-select)]">
+        <a href={p.image.src} target="_blank" rel="noopener noreferrer" title={t.openImage(p.image.alt)} className="block border border-[#aca899] hover:border-[var(--xp-select)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={p.image.src} alt={p.image.alt} width={1280} height={1600} loading="lazy" className="block max-h-[420px] w-full object-cover object-top" />
         </a>
@@ -334,7 +354,7 @@ function ProjectDetail({ project: p }: { project: Project }) {
 
       <div className="grid gap-3 @xl:grid-cols-[3fr_2fr]">
         <fieldset className="xp-groupbox">
-          <legend>Highlights</legend>
+          <legend>{t.highlights}</legend>
           <ul className="list-disc space-y-1 pl-4">
             {p.details.map((d) => (
               <li key={d}>{d}</li>
@@ -343,7 +363,7 @@ function ProjectDetail({ project: p }: { project: Project }) {
         </fieldset>
         <div className="space-y-3">
           <fieldset className="xp-groupbox">
-            <legend>Technology</legend>
+            <legend>{t.technology}</legend>
             <ul className="flex flex-wrap gap-1 text-[11px]">
               {p.tech.map((t) => (
                 <li key={t} className="border border-[#c9c7ba] bg-[var(--xp-face)] px-1.5">
@@ -353,7 +373,7 @@ function ProjectDetail({ project: p }: { project: Project }) {
             </ul>
           </fieldset>
           <fieldset className="xp-groupbox">
-            <legend>Links</legend>
+            <legend>{t.links}</legend>
             <div className="flex flex-wrap gap-1.5">
               {p.links.map((l) => (
                 <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="xp-button inline-flex items-center gap-1.5">
@@ -364,11 +384,13 @@ function ProjectDetail({ project: p }: { project: Project }) {
               {p.frameUrl && (
                 <button type="button" className="xp-button inline-flex items-center gap-1.5" onClick={() => api.openApp("ie", { url: p.frameUrl })}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={APPS.ie.icon} alt="" width={14} height={14} />
-                  Open in IE
+                  <img src={apps.ie.icon} alt="" width={14} height={14} />
+                  {t.openInIeShort}
                 </button>
               )}
-              {p.links.length === 0 && <p className="text-[#555]">No public link. Ask me about it: {PROFILE.email}</p>}
+              {p.links.length === 0 && <p className="text-[#555]">
+                  {t.noLink} {PROFILE.email}
+                </p>}
             </div>
           </fieldset>
         </div>

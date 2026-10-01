@@ -1,5 +1,7 @@
 "use client";
 
+import { useStrings } from "@/lib/language";
+
 import { useEffect, useRef } from "react";
 
 interface Point {
@@ -14,6 +16,7 @@ const VERTICES = 4;
 
 /** Mystify: two bouncing polygons with fading trails. Any input wakes the desktop. */
 export default function Screensaver({ onWake }: { onWake: () => void }) {
+  const label = useStrings().screensaver;
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -92,5 +95,5 @@ export default function Screensaver({ onWake }: { onWake: () => void }) {
     };
   }, [onWake]);
 
-  return <canvas ref={canvas} className="fixed inset-0 z-[100] h-full w-full cursor-none bg-black" aria-label="Screensaver. Move the mouse or press a key to return." role="img" />;
+  return <canvas ref={canvas} className="fixed inset-0 z-[100] h-full w-full cursor-none bg-black" aria-label={label} role="img" />;
 }

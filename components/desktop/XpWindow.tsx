@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type Dispatch, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { APPS } from "@/data/apps";
+import { useStrings } from "@/lib/language";
 import { TASKBAR_H, isMaximizable, isResizable, type Viewport, type WMAction, type WinState } from "@/lib/windowManager";
 import { CloseGlyph, HelpGlyph, MaximizeGlyph, MinimizeGlyph, RestoreGlyph } from "@/components/ui/glyphs";
 
@@ -22,6 +23,7 @@ type Gesture = { kind: "move" | "e" | "s" | "se"; startX: number; startY: number
 
 export default function XpWindow({ win, title, active, getViewport, dispatch, onClose, onMinimize, onToggleMax, onHelp, children }: XpWindowProps) {
   const meta = APPS[win.id];
+  const t = useStrings().window;
   const titleId = useId();
   const ref = useRef<HTMLDivElement>(null);
   const gesture = useRef<Gesture | null>(null);
@@ -104,22 +106,22 @@ export default function XpWindow({ win, title, active, getViewport, dispatch, on
         </span>
         <span className="flex items-center gap-[2px]">
           {meta.dialog ? (
-            <button type="button" className="xp-tbtn" aria-label="Help" title="Help" onClick={onHelp}>
+            <button type="button" className="xp-tbtn" aria-label={t.help} title={t.help} onClick={onHelp}>
               <HelpGlyph />
             </button>
           ) : (
             <>
-              <button type="button" className="xp-tbtn" aria-label="Minimize" title="Minimize" onClick={onMinimize}>
+              <button type="button" className="xp-tbtn" aria-label={t.minimize} title={t.minimize} onClick={onMinimize}>
                 <MinimizeGlyph />
               </button>
               {maximizable && (
-                <button type="button" className="xp-tbtn" aria-label={win.max ? "Restore" : "Maximize"} title={win.max ? "Restore" : "Maximize"} onClick={onToggleMax}>
+                <button type="button" className="xp-tbtn" aria-label={win.max ? t.restore : t.maximize} title={win.max ? t.restore : t.maximize} onClick={onToggleMax}>
                   {win.max ? <RestoreGlyph /> : <MaximizeGlyph />}
                 </button>
               )}
             </>
           )}
-          <button type="button" className="xp-tbtn xp-tbtn-close ml-[2px]" aria-label="Close" title="Close" onClick={onClose}>
+          <button type="button" className="xp-tbtn xp-tbtn-close ml-[2px]" aria-label={t.close} title={t.close} onClick={onClose}>
             <CloseGlyph />
           </button>
         </span>
@@ -131,7 +133,7 @@ export default function XpWindow({ win, title, active, getViewport, dispatch, on
         <>
           <div className="absolute right-0 top-8 bottom-4 w-[5px] cursor-e-resize touch-none" {...handlers("e")} aria-hidden="true" />
           <div className="absolute bottom-0 left-2 right-4 h-[5px] cursor-s-resize touch-none" {...handlers("s")} aria-hidden="true" />
-          <div className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize touch-none pointer-coarse:h-7 pointer-coarse:w-7" {...handlers("se")} title="Resize" aria-hidden="true">
+          <div className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize touch-none pointer-coarse:h-7 pointer-coarse:w-7" {...handlers("se")} title={t.resize} aria-hidden="true">
             <svg width="12" height="12" className="absolute bottom-[4px] right-[4px] opacity-60" aria-hidden="true">
               <path d="M11 3v8H3M11 7v4H7" fill="none" stroke="#fff" strokeWidth="1.2" />
             </svg>

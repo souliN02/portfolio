@@ -132,6 +132,7 @@ describe("processes", () => {
   it("lists running programs, with Explorer windows sharing one process", () => {
     const text = run("tasklist", { openApps: [...openApps] }).output.join("\n");
     expect(text).toContain("winmine.exe");
+    expect(text).toContain("csrss.exe");
     expect(text.match(/explorer\.exe/g)).toHaveLength(1);
     expect(text).not.toContain("sol.exe");
   });
@@ -140,12 +141,28 @@ describe("processes", () => {
     const ctxApps = { openApps: [...openApps] };
     expect(run("taskkill /im winmine.exe", ctxApps).effect).toEqual({ type: "closeApps", apps: ["minesweeper"] });
     expect(run("taskkill minesweeper", ctxApps).effect).toEqual({ type: "closeApps", apps: ["minesweeper"] });
-    expect(run("taskkill /f /im explorer.exe", ctxApps).effect).toEqual({ type: "closeApps", apps: ["projects", "games"] });
     const pid = /winmine\.exe\s+(\d+)/.exec(run("tasklist", ctxApps).output.join("\n"))![1];
     expect(run(`taskkill /pid ${pid}`, ctxApps).effect).toEqual({ type: "closeApps", apps: ["minesweeper"] });
     expect(run("taskkill /im cmd.exe", ctxApps).effect).toEqual({ type: "exit" });
     expect(run("taskkill /im sol.exe", ctxApps).output[0]).toContain("not found");
     expect(run("taskkill").output[0]).toContain("Invalid syntax");
+  });
+
+  it("blue-screens when a critical process or Explorer is ended", () => {
+    const explorer = run("taskkill /f /im explorer.exe", { openApps: [...openApps] });
+    expect(explorer.output[0]).toContain("SUCCESS");
+    expect(explorer.effect).toEqual({ type: "crash", crash: { stop: "CRITICAL_OBJECT_TERMINATION", file: "EXPLORER.EXE" } });
+    expect(run("taskkill /im csrss.exe").effect).toMatchObject({ type: "crash", crash: { file: "CSRSS.EXE" } });
+    expect(run("taskkill winlogon").effect).toMatchObject({ type: "crash", crash: { file: "WINLOGON.EXE" } });
+  });
+
+  it("formats drive C: straight into a blue screen", () => {
+    const format = run("format c:");
+    expect(format.output.join(" ")).toContain("Proceed with Format (Y/N)? Y");
+    expect(format.effect).toEqual({ type: "crash", crash: { stop: "UNMOUNTABLE_BOOT_VOLUME", file: "FORMAT.COM" } });
+    expect(run("FORMAT C").effect?.type).toBe("crash");
+    expect(run("format").effect).toBeUndefined();
+    expect(run("format d:").output).toEqual(["Invalid drive specification."]);
   });
 });
 
@@ -202,6 +219,7 @@ describe("complete, for new commands", () => {
   it("completes games, git and taskkill targets", () => {
     expect(complete("play fr")).toEqual({ value: "play freecell " });
     expect(complete("git st")).toEqual({ value: "git status " });
-    expect(complete("taskkill /im win", { openApps: ["minesweeper"] })).toEqual({ value: "taskkill /im winmine.exe " });
+    expect(complete("taskkill /im winm", { openApps: ["minesweeper"] })).toEqual({ value: "taskkill /im winmine.exe " });
+    expect(complete("taskkill /im win", { openApps: ["minesweeper"] }).matches).toEqual(["winlogon.exe", "winmine.exe"]);
   });
 });

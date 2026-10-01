@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { Power } from "lucide-react";
-import { PROFILE } from "@/data/profile";
+import { profileFor } from "@/data/profile";
+import { useLang, useStrings } from "@/lib/language";
 import { XpFlag } from "@/components/ui/glyphs";
 
 export type WelcomeMode = "login" | "welcome" | "loggingOff" | "shuttingDown";
@@ -13,18 +14,15 @@ interface WelcomeScreenProps {
   onTurnOff: () => void;
 }
 
-const MESSAGES: Record<Exclude<WelcomeMode, "login">, string> = {
-  welcome: "welcome",
-  loggingOff: "logging off...",
-  shuttingDown: "Windows is shutting down...",
-};
-
 /**
  * The XP Welcome screen. Clicking the user tile counts as a user gesture,
  * which is what lets the browser play the startup sound.
  */
 export default function WelcomeScreen({ mode, onLogin, onTurnOff }: WelcomeScreenProps) {
   const tile = useRef<HTMLButtonElement>(null);
+  const lang = useLang();
+  const t = useStrings().welcome;
+  const profile = profileFor(lang);
   useEffect(() => {
     if (mode === "login") tile.current?.focus({ preventScroll: true });
   }, [mode]);
@@ -47,7 +45,7 @@ export default function WelcomeScreen({ mode, onLogin, onTurnOff }: WelcomeScree
                   Portfolio<span className="ml-1 italic text-[#ff8a1a]">XP</span>
                 </p>
               </div>
-              <p className="text-[15px] text-white/95 md:text-right">To begin, click your user name</p>
+              <p className="text-[15px] text-white/95 md:text-right">{t.begin}</p>
             </div>
 
             <div className="hidden h-[300px] w-px bg-gradient-to-b from-transparent via-white/70 to-transparent md:block" aria-hidden="true" />
@@ -64,8 +62,8 @@ export default function WelcomeScreen({ mode, onLogin, onTurnOff }: WelcomeScree
                   <img src="/xp-icons/User 1.ico" alt="" width={48} height={48} draggable={false} />
                 </span>
                 <span>
-                  <span className="block text-[22px] leading-tight [text-shadow:1px_1px_2px_rgba(0,0,0,0.3)]">{PROFILE.name}</span>
-                  <span className="block text-[12px] text-white/85">{PROFILE.role}</span>
+                  <span className="block text-[22px] leading-tight [text-shadow:1px_1px_2px_rgba(0,0,0,0.3)]">{profile.name}</span>
+                  <span className="block text-[12px] text-white/85">{profile.role}</span>
                 </span>
               </button>
             </div>
@@ -73,7 +71,7 @@ export default function WelcomeScreen({ mode, onLogin, onTurnOff }: WelcomeScree
         ) : (
           <div className="mx-auto flex w-full max-w-[900px] items-center px-6">
             <p className={`md:w-1/2 md:pr-10 md:text-right ${mode === "welcome" ? "text-[56px] italic" : "text-[26px]"} font-bold [text-shadow:1px_2px_4px_rgba(0,0,0,0.3)]`} role="status">
-              {MESSAGES[mode]}
+              {t[mode]}
             </p>
           </div>
         )}
@@ -88,10 +86,10 @@ export default function WelcomeScreen({ mode, onLogin, onTurnOff }: WelcomeScree
               <span className="grid h-[26px] w-[26px] place-items-center rounded-[4px] border border-white/80 bg-gradient-to-b from-[#f08a6a] to-[#c9321a]">
                 <Power className="h-4 w-4" />
               </span>
-              Turn off computer
+              {t.turnOff}
             </button>
             <p className="hidden max-w-[360px] text-right text-[11px] leading-snug text-white/85 sm:block">
-              After you log on, you can explore my projects, read my CV, or send me an e-mail. Returning visitors skip this screen.
+              {t.hint}
             </p>
           </>
         ) : (
