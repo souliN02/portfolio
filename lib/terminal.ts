@@ -1,4 +1,4 @@
-import { APPS, APP_IDS, CORNER_ICON, DESKTOP_ICONS, GAMES, resolveApp, type AppId } from "@/data/apps";
+import { APPS, APP_IDS, CORNER_ICON, DESKTOP_ICONS, GAMES, WEB_GAMES, gameList, resolveApp, type AppId } from "@/data/apps";
 import { EDUCATION, EXPERIENCE, LANGUAGES, PROFILE, SKILLS, companyLabel } from "@/data/profile";
 import { FLAGSHIP, PROJECTS, PROJECT_GROUPS, getProject, projectsInGroup } from "@/data/projects";
 import { readmeText } from "@/data/readme";
@@ -375,7 +375,7 @@ function treeLines(): string[] {
   const children: Partial<Record<AppId, string[]>> = {
     projects: PROJECTS.map((p) => p.title),
     cv: ["Bekir_CV.pdf"],
-    games: GAMES.map((id) => APPS[id].label),
+    games: gameList("en").map((g) => g.label),
   };
   entries.forEach((e, i) => {
     const last = i === entries.length - 1;
@@ -527,11 +527,14 @@ function pingLines(host: string, ctx: CommandContext): string[] {
 /* ─── Games ─── */
 
 function gamesResult(ctx: CommandContext): CommandResult {
-  const pad = Math.max(...GAMES.map((id) => APPS[id].label.length)) + 2;
-  const rows = GAMES.flatMap((id) => wrap(APPS[id].desc, width(ctx) - pad - 2, " ".repeat(pad + 2)).map((l, i) => (i === 0 ? `  ${APPS[id].label.padEnd(pad)}${l}` : l)));
+  const games = gameList("en");
+  const pad = Math.max(...games.map((g) => g.label.length)) + 2;
+  const rows = games.flatMap((g) =>
+    wrap(g.web ? `${g.desc} (opens in a new tab)` : g.desc, width(ctx) - pad - 2, " ".repeat(pad + 2)).map((l, i) => (i === 0 ? `  ${g.label.padEnd(pad)}${l}` : l)),
+  );
   return {
     output: [...section("Games"), ...rows, "", "  Click or tap a game, or 'play <game>'."],
-    links: Object.fromEntries(GAMES.map((id) => [APPS[id].label, `play ${id}`])),
+    links: Object.fromEntries(games.map((g) => [g.label, `play ${g.id}`])),
   };
 }
 
@@ -749,6 +752,9 @@ export function runCommand(raw: string, ctx: CommandContext): CommandResult {
       return gamesResult(ctx);
     case "play": {
       if (!arg1) return gamesResult(ctx);
+      // A web game opens its own site in a new tab, as from the Games folder
+      const web = WEB_GAMES.find((g) => g.id === arg1);
+      if (web) return { output: [`Opening ${web.label} in a new tab: ${web.url}`], effect: { type: "openUrl", url: web.url } };
       const app = resolveApp(arg1);
       if (app && (GAMES as readonly AppId[]).includes(app)) return { output: [`Starting ${APPS[app].label}...`], effect: { type: "openApp", app } };
       return { output: [`There's no game called '${args}'. Type 'games' to see them all.`] };
@@ -870,7 +876,7 @@ export function complete(input: string, ctx: Pick<CommandContext, "openApps"> = 
   let pool: string[] = [];
   if (base === "open") pool = [...APP_IDS, ...PROJECTS.map((p) => p.id), ...Object.keys(LINKS)];
   else if (base === "cd") pool = [...APP_IDS];
-  else if (base === "play") pool = [...GAMES];
+  else if (base === "play") pool = [...GAMES, ...WEB_GAMES.map((g) => g.id)];
   else if (base === "cat") pool = Object.keys(FILES);
   else if (base === "color") pool = COLOR_SCHEMES.map((c) => c.id);
   else if (base === "help") pool = ALL_COMMANDS;

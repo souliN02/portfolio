@@ -81,8 +81,55 @@ export function appsFor(lang: Lang): Record<AppId, AppMeta> {
 
 export const RECYCLE_EMPTY_ICON = EXTRA("recycle-empty");
 
-/** Everything in the Games folder, in the order XP's Games menu listed them */
+/** XP's games in the Games folder, in the order XP's Games menu listed them */
 export const GAMES = ["freecell", "hearts", "minesweeper", "solitaire", "spider"] as const satisfies readonly AppId[];
+
+/** A game on its own site: the Games folder lists it with the rest, and it opens in a new tab rather than a window */
+export interface WebGame {
+  id: string;
+  label: string;
+  desc: string;
+  /** The Danish description; the name stays the same */
+  da: string;
+  icon: string;
+  url: string;
+}
+
+export const WEB_GAMES: WebGame[] = [
+  {
+    id: "ordet",
+    label: "Ordet",
+    desc: "My daily word game in English and Danish",
+    da: "Mit daglige ordspil på engelsk og dansk",
+    icon: EXTRA("ordet"),
+    url: "https://ordet.bekirsaliv.dk",
+  },
+];
+
+/** A web game's address in the desktop's language, so a Danish desktop opens it in Danish */
+export function webGameUrl(game: WebGame, lang: Lang): string {
+  return lang === "da" ? `${game.url}/?lang=da` : game.url;
+}
+
+/** An entry in the Games folder: one of XP's games (a window) or a web game (a new tab) */
+export interface GameEntry {
+  id: string;
+  label: string;
+  desc: string;
+  icon: string;
+  app?: AppId;
+  web?: WebGame;
+}
+
+/** What the Games folder and the terminal list: XP's games and the web games, sorted by name as XP sorted its folder */
+export function gameList(lang: Lang): GameEntry[] {
+  const apps = appsFor(lang);
+  const entries: GameEntry[] = [
+    ...GAMES.map((app) => ({ id: app, label: apps[app].label, desc: apps[app].desc, icon: apps[app].icon, app })),
+    ...WEB_GAMES.map((web) => ({ id: web.id, label: web.label, desc: lang === "da" ? web.da : web.desc, icon: web.icon, web })),
+  ];
+  return entries.sort((a, b) => a.label.localeCompare(b.label));
+}
 
 /** Icons in the desktop's left-hand column(s), top to bottom */
 export const DESKTOP_ICONS: AppId[] = ["projects", "about", "cv", "contact", "ie", "terminal", "notepad", "games"];

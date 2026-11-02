@@ -121,6 +121,16 @@ describe("games", () => {
     expect(run("play").links).toBeDefined();
   });
 
+  it("lists Ordet with the rest and opens it on its own site in a new tab", () => {
+    const { output, links } = run("games");
+    expect(output.join("\n")).toContain("Ordet");
+    expect(links?.Ordet).toBe("play ordet");
+    expect(run("play Ordet").effect).toEqual({ type: "openUrl", url: "https://ordet.bekirsaliv.dk" });
+    expect(complete("play or")).toEqual({ value: "play ordet " });
+    // `open ordet` still shows the project in My Projects
+    expect(run("open ordet").effect).toEqual({ type: "openApp", app: "projects", props: { project: "ordet" } });
+  });
+
   it("shows statistics from the games", () => {
     const stats = { ...readStats(), minesweeper: { played: 4, won: 2, best: 37 } };
     expect(run("highscores", { stats }).output.join("\n")).toMatch(/Minesweeper\s+2\/4\s+37 seconds/);

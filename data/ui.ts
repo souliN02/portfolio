@@ -220,6 +220,7 @@ const en = {
     play: (name: string) => `Play ${name}`,
     select: "Select a game to see its details.",
     count: (n: number) => `${n} games`,
+    newTab: "Opens in a new tab.",
   },
 };
 
@@ -439,6 +440,7 @@ const da: UiStrings = {
     play: (name) => `Spil ${name}`,
     select: "Vælg et spil for at se detaljerne.",
     count: (n) => `${n} spil`,
+    newTab: "Åbner i en ny fane.",
   },
 };
 

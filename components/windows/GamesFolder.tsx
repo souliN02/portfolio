@@ -1,18 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { GAMES, appsFor, type AppId } from "@/data/apps";
+import { appsFor, gameList, webGameUrl, type GameEntry } from "@/data/apps";
 import { useLang, useStrings } from "@/lib/language";
 import { useDesktop } from "@/components/desktop/DesktopContext";
 import { AddressBar, MenuBar, StatusBar, TaskLink, TaskPane, TaskPanel } from "./ExplorerChrome";
 
-/** XP kept its games in Start > All Programs > Games; here they live in a folder on the desktop */
+/** XP kept its games in Start > All Programs > Games; here they live in a folder on the desktop, with Ordet among them */
 export default function GamesFolder() {
   const api = useDesktop();
-  const [selected, setSelected] = useState<AppId | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
   const t = useStrings();
-  const apps = appsFor(useLang());
-  const sel = selected ? apps[selected] : null;
+  const lang = useLang();
+  const apps = appsFor(lang);
+  const games = gameList(lang);
+  const sel = games.find((g) => g.id === selected) ?? null;
+
+  // XP's games open a window; a web game opens its own site in a new tab
+  const play = (game: GameEntry) => {
+    if (game.web) window.open(webGameUrl(game.web, lang), "_blank", "noopener,noreferrer");
+    else if (game.app) api.openApp(game.app);
+  };
+  const describe = (game: GameEntry) => (game.web ? `${game.desc}. ${t.games.newTab}` : game.desc);
 
   return (
     <div className="flex h-full flex-col text-[11px]">
@@ -28,8 +37,8 @@ export default function GamesFolder() {
       <div className="flex min-h-0 flex-1">
         <TaskPane>
           <TaskPanel title={t.games.tasks}>
-            {sel && selected ? (
-              <TaskLink icon={sel.icon} onClick={() => api.openApp(selected)}>
+            {sel ? (
+              <TaskLink icon={sel.icon} onClick={() => play(sel)}>
                 {t.games.play(sel.label)}
               </TaskLink>
             ) : (
@@ -46,7 +55,7 @@ export default function GamesFolder() {
           </TaskPanel>
           <TaskPanel title={t.details}>
             <p className="font-bold">{sel?.label ?? apps.games.label}</p>
-            <p>{sel ? sel.desc : t.games.count(GAMES.length)}</p>
+            <p>{sel ? describe(sel) : t.games.count(games.length)}</p>
           </TaskPanel>
         </TaskPane>
 
@@ -56,29 +65,29 @@ export default function GamesFolder() {
           role="list"
           aria-label={apps.games.label}
         >
-          {GAMES.map((id) => {
-            const isSel = selected === id;
+          {games.map((game) => {
+            const isSel = selected === game.id;
             return (
               <button
-                key={id}
+                key={game.id}
                 type="button"
                 role="listitem"
                 className="flex flex-col items-center gap-1 rounded-sm p-1.5 text-center outline-none focus-visible:outline-1 focus-visible:outline-dotted pointer-coarse:py-3"
                 // Touch screens open on a tap, as on the desktop; a mouse selects, then double-clicks
-                onClick={() => (api.touch ? api.openApp(id) : setSelected(id))}
-                onDoubleClick={() => api.openApp(id)}
-                onFocus={() => setSelected(id)}
+                onClick={() => (api.touch ? play(game) : setSelected(game.id))}
+                onDoubleClick={() => play(game)}
+                onFocus={() => setSelected(game.id)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    api.openApp(id);
+                    play(game);
                   }
                 }}
-                aria-label={`${apps[id].label}: ${apps[id].desc}`}
+                aria-label={`${game.label}: ${describe(game)}`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={apps[id].icon} alt="" width={32} height={32} draggable={false} />
-                <span className={`px-0.5 leading-tight ${isSel ? "bg-[var(--xp-select)] text-white" : ""}`}>{apps[id].label}</span>
+                <img src={game.icon} alt="" width={32} height={32} draggable={false} />
+                <span className={`px-0.5 leading-tight ${isSel ? "bg-[var(--xp-select)] text-white" : ""}`}>{game.label}</span>
               </button>
             );
           })}
@@ -86,7 +95,7 @@ export default function GamesFolder() {
       </div>
 
       <StatusBar>
-        <span className="flex-1">{sel ? sel.desc : t.objects(GAMES.length)}</span>
+        <span className="flex-1">{sel ? describe(sel) : t.objects(games.length)}</span>
       </StatusBar>
     </div>
   );
