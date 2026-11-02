@@ -175,6 +175,8 @@ export default function InternetExplorer({ win }: { win: WinState }) {
             className="h-full w-full border-0"
             onLoad={() => setLoading(false)}
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+            // Lets a framed project copy or share (Ordet's results) like it can in its own tab
+            allow="clipboard-write; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
           />
         )}

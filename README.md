@@ -13,7 +13,7 @@ My portfolio, built as a Windows XP desktop you can actually use. Double-click t
 | **My Projects** (Explorer) | Projects as folders, with a task pane, back/forward/up navigation, and an address bar that doubles as a project picker |
 | **About Me** (System Properties) | Bio, skills, experience and education as dialog tabs |
 | **Contact** (Outlook Express) | A real contact form sent through Resend, falling back to the visitor's mail app |
-| **Internet Explorer** | Runs my live projects (LineDrift, Risk) inside the desktop |
+| **Internet Explorer** | Runs my live projects (LineDrift, Risk, Ordet) inside the desktop |
 | **Terminal** (Command Prompt) | `help`, `projects`, `open linedrift`, `msg hi bekir!`, `tasklist`/`taskkill`, `git log`, `calc`, tab completion and history. On phones it wraps to the screen, commands in the output can be tapped, and a quick-key bar stands in for Tab and the arrow keys |
 | **Games** | XP's games folder: Solitaire (with the bouncing-cards win), Spider Solitaire (1, 2 or 4 suits), FreeCell (Microsoft's numbered deals, so game #1 is XP's game #1), Hearts against three computer players, and Minesweeper. Drag cards or tap to move them, with undo and saved statistics |
 | **Bekir's CV**, **readme.txt**, **Recycle Bin** | The rest of a proper desktop |
